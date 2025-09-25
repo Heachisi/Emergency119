@@ -1,5 +1,5 @@
 // frontend/src/components/StateIndicator.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './StateIndicator.css';
 
 const StateIndicator = ({ currentState, scores, jobId, timestamp }) => {
@@ -114,6 +114,28 @@ const StateIndicator = ({ currentState, scores, jobId, timestamp }) => {
     }
   };
 
+      // 상단: 상태 추가
+        const [latchedCall119, setLatchedCall119] = useState(false);
+
+      // currentState 변할 때 한 번이라도 CALL_119이면 래치 ON
+      useEffect(() => {
+        if (currentState === 'CALL_119') {
+          setLatchedCall119(true);
+        }
+      }, [currentState]);
+
+      // (선택) 새로운 분석 영상/잡 시작 시 래치 초기화
+      useEffect(() => {
+        setLatchedCall119(false);
+      }, [jobId]); // jobId를 사용 중이라면
+
+      // (선택) 운영자가 수동 해제하고 싶을 때
+      const handleAck = async () => {
+        setLatchedCall119(false);
+        // 백엔드에 ack 보내는 로직이 있다면 함께 호출
+        // await fetch(`/jobs/${jobId}/control`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({cmd:'ack'}) });
+      };
+
   return (
     <div className={`state-indicator-main ${stateInfo.priority}`}>
       {/* 간단한 상태 표시 */}
@@ -161,14 +183,14 @@ const StateIndicator = ({ currentState, scores, jobId, timestamp }) => {
       </div>
 
       {/* 119 호출 상태일 때만 긴급 버튼 표시 */}
-      {currentState === 'CALL_119' && (
+      {latchedCall119 && (
         <div className="emergency-simple">
-          <button
-            className="call-119-btn-simple"
-            onClick={handleEmergencyCall}
-          >
+          <button className="call-119-btn-simple" onClick={handleEmergencyCall}>
             📞 119 호출 + 알림
           </button>
+
+          {/* (선택) 확인/숨기기 버튼 */}
+          {/* <button className="ack-btn" onClick={handleAck}>확인</button> */}
         </div>
       )}
     </div>

@@ -129,8 +129,7 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  animation: pulse 2s infinite;
+
 }
 
 .call-119-btn-simple:hover {
