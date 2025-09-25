@@ -83,6 +83,9 @@ if not SMOKE_CLASS_IDS:
 DEBUG_MODE = False  # False로 설정하면 로그가 거의 출력되지 않음
 QUIET_MODE = True   # True로 설정하면 거의 모든 로그 숨김
 
+# 화재 심각도
+SEVERITY = {"NORMAL":0, "PRE_FIRE":1, "SMOKE_DETECTED":2, "FIRE_GROWING":3, "CALL_119":4}
+
 # 규칙 설정
 RULES = {
     "imgsz": 416,
@@ -175,7 +178,16 @@ async def upload_video(file: UploadFile, background_tasks: BackgroundTasks):
         if not QUIET_MODE:
             print(f"✅ 저장완료: {job_id} ({dest.stat().st_size} bytes)")
 
-        JOBS[job_id] = {"path": str(dest), "done": False, "err": None}
+        JOBS[job_id] = {
+            "path": str(dest),
+            "done": False,
+            "err": None,
+            # 🔽 추가: 최대 위험도 / 최대 상태 / 119 래치
+            "max_hazard": 0.0,
+            "max_state": "NORMAL",
+            "latched_call119": False,
+            "max_at": 0.0,  # 최대치가 찍힌 영상 내 시간(s)
+            }
         EVENT_QUEUES[job_id] = asyncio.Queue(maxsize=100)
         JOB_FLAGS[job_id] = {"paused": False, "stop": False}
 
@@ -262,11 +274,18 @@ async def send_emergency_email(request: EmailRequest):
         raise HTTPException(status_code=500, detail=f"이메일 발송 실패: {str(e)}")
 
 @app.post("/jobs/{job_id}/restart")
+
 async def restart_analysis(job_id: str, background_tasks: BackgroundTasks):
     """기존 영상 재분석"""
     print(f"🔄 재분석 요청 수신: {job_id}")
     print(f"🗃️ 현재 등록된 JOBS: {list(JOBS.keys())}")
-
+    JOBS[job_id]["done"] = False
+    JOBS[job_id]["err"] = None
+    # 🔽 추가: 재분석 시 최대값/래치도 초기화
+    JOBS[job_id]["max_hazard"] = 0.0
+    JOBS[job_id]["max_state"] = "NORMAL"
+    JOBS[job_id]["latched_call119"] = False
+    JOBS[job_id]["max_at"] = 0.0
     if job_id not in JOBS:
         print(f"❌ Job ID {job_id}를 찾을 수 없음")
         available_jobs = list(JOBS.keys())
@@ -331,6 +350,7 @@ async def process_video_job(job_id: str, path: Path):
         frame_idx = -1
         S_ema = F_ema = prev_S = prev_F = 0.0
         state = "NORMAL"
+
         last_state = "NORMAL"
         pause_started = None
         processed_frames = 0
@@ -445,11 +465,12 @@ async def process_video_job(job_id: str, path: Path):
                     box["ema_score"] = round(F_ema, 3)
                 else:  # Smoke
                     box["ema_score"] = round(S_ema, 3)
-
+            # 🔽 래치/최대값 업데이트
+            job = JOBS.get(job_id, {})
             # 상태 결정
             th = RULES["thresholds"]
             if H > th["call_119"]["hazard"]:
-                state = "CALL_119"
+                job["latched_call119"] = True
             elif (F_ema > th["fire_growing"]["fire"]) or (H > th["fire_growing"]["hazard"]):
                 state = "FIRE_GROWING"
             elif S_ema > th["smoke_detected"]["smoke"]:
@@ -458,6 +479,15 @@ async def process_video_job(job_id: str, path: Path):
                 state = "PRE_FIRE"
             else:
                 state = "NORMAL"
+
+            # 최대 위험도/최대 상태 갱신
+            if H > job.get("max_hazard", 0.0):
+                job["max_hazard"] = float(H)
+                job["max_at"] = float(frame_idx / fps)
+
+            # 더 높은 심각도만 반영(하향 금지)
+            if SEVERITY[state] > SEVERITY.get(job.get("max_state", "NORMAL"), 0):
+                job["max_state"] = state
 
             # 이벤트 push (SSE)
             t_video = frame_idx / fps
@@ -481,6 +511,13 @@ async def process_video_job(job_id: str, path: Path):
                 "img_w": w,
                 "img_h": h,
                 "boxes": boxes_out,
+                # 🔽 추가: 프론트가 이 값만 보고 버튼 표시를 ‘계속’ 유지할 수 있음
+                "ui": {
+                    "max_hazard": round(JOBS[job_id]["max_hazard"], 3),
+                    "max_state": JOBS[job_id]["max_state"],
+                    "latched_call_119": bool(JOBS[job_id]["latched_call119"]),
+                    "max_at": JOBS[job_id]["max_at"],
+                },
             }
 
             # SSE 데이터 확인 (상태 변화나 높은 점수일 때만)
