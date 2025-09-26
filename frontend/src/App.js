@@ -10,6 +10,9 @@ import Signup from './user/Signup';
 import Findid from './user/Findid';
 import Resetpw from './user/Resetpw';
 
+//센서 값 및 그래프 출력 페이지
+import SmokeDetect from './analysis/SmokeDetect';
+
 // 비디오 분석 컴포넌트들
 import VideoAnalysis from './components/VideoAnalysis';
 
@@ -30,7 +33,8 @@ function App() {
           <Route path="/user/findid" element={<Findid />} />
           <Route path="/user/resetpw" element={<Resetpw />} />
           
-          
+          <Route path="/smokedetect" element={<SmokeDetect />} />
+
           {/* 비디오 분석 페이지 */}
           <Route path="/analysis" element={<VideoAnalysis />} />
           
