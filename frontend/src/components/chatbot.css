@@ -1,0 +1,123 @@
+/* 플로팅 아이콘(변경 없음) */
+.emg-chat-fab{
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 64px; height: 64px;
+  border-radius: 9999px;
+  border: none;
+  background: #111827;
+  box-shadow: 0 10px 25px rgba(0,0,0,.35);
+  padding: 6px;
+  cursor: pointer;
+  z-index: 9999;
+}
+.emg-chat-fab img{ width:100%; height:100%; object-fit: contain }
+
+/* 패널 → 살짝 키움 (기존 360x560 → 420x620) */
+.emg-chat-panel{
+  position: fixed;
+  right: 20px;
+  bottom: 100px;
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  height: 620px;
+  max-height: calc(100vh - 140px);
+  display: flex; flex-direction: column;
+  background: #0f172a; color: #e5e7eb;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  box-shadow: 0 25px 60px rgba(0,0,0,.45);
+  z-index: 10000;
+  overflow: hidden;
+}
+.emg-chat-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 12px 14px; background:#111827; border-bottom:1px solid #1f2937;
+}
+.emg-chat-title{ font-weight:700 }
+.emg-chat-close{ background:transparent; color:#e5e7eb; border:none; font-size:18px; cursor:pointer }
+
+/* ====== 원버튼(짧은 칩) ====== */
+.emg-one-taps{
+  display:flex; gap:8px; flex-wrap:wrap;
+  padding:10px 12px; border-bottom:1px solid #1f2937;
+  background:#0b1220;
+}
+.emg-one-taps .pill{
+  background:#0b1220; color:#e5e7eb;
+  border:1px solid #1f2937;
+  padding:8px 10px; border-radius:999px; cursor:pointer; font-size:12px;
+  line-height:1; white-space:nowrap;
+}
+.emg-one-taps .pill:hover{ border-color:#334155 }
+
+/* ====== 근처 바: 두 줄 레이아웃 ====== */
+.emg-nearby-bar.vertical{
+  display:flex;
+  flex-direction: column;   /* ✅ 세로 정렬 */
+  gap: 8px;
+  padding:10px 12px;
+  background:#0f172a;
+  border-bottom:1px solid #1f2937;
+}
+.emg-nearby-bar .row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.emg-nearby-bar .label{
+  font-size:12px;
+  color:#9ca3af;
+}
+
+.select{
+  background:#070d19; border:1px solid #1f2937; color:#e5e7eb;
+  padding:8px 10px; border-radius:10px; min-height:36px;
+}
+.btn{
+  background:#070d19; border:1px solid #1f2937; color:#e5e7eb;
+  padding:8px 12px; border-radius:10px; min-height:36px; cursor:pointer;
+}
+.btn.primary{ background:linear-gradient(90deg,#06b6d4,#3b82f6); border:none; color:white; }
+.btn.ghost{ background:#0b1220; }
+.btn:disabled{ opacity:.5; cursor:not-allowed }
+
+/* ====== 대화/입력 ====== */
+.emg-chat-log{
+  flex:1; overflow:auto; padding:12px; display:flex; flex-direction:column; gap:10px;
+}
+.msg{ display:flex; gap:8px }
+.msg.you{ justify-content:flex-end }
+.bubble{
+  max-width:90%; padding:10px 12px; border-radius:14px; white-space:pre-wrap; line-height:1.45; font-size:14px;
+  background:#0b1220; border:1px solid #1f2937;
+}
+.msg.you .bubble{ background:#1d4ed8; border-color:#1e40af; color:#fff }
+.meta{ font-size:12px; color:#9ca3af; padding:0 12px }
+
+.emg-chat-input{
+  display:flex; gap:8px; padding:10px 12px; border-top:1px solid #1f2937; background:#0f172a;
+}
+.emg-chat-input textarea{
+  flex:1; resize:none; min-height:48px; max-height:160px;
+  background:#0b1220; border:1px solid #1f2937; color:#e5e7eb; border-radius:10px; padding:10px; font-size:14px;
+}
+.emg-chat-input .send{
+  background:linear-gradient(90deg,#06b6d4,#3b82f6); border:none; color:white;
+  padding:10px 14px; border-radius:10px; font-weight:700; min-width:72px; cursor:pointer;
+}
+
+/* 주의사항 → 더 작게 */
+.note{
+  padding:8px 12px; border-top:1px solid #1f2937; background:#0b1220; color:#9ca3af;
+  font-size:12px;
+}
+.note.small{ font-size:11px; }
+
+/* 모바일 최적화 */
+@media (max-width:480px){
+  .emg-chat-panel{ right: 10px; left: 10px; width:auto; height: 72vh; bottom: 90px; }
+  .emg-chat-fab{ right: 12px; bottom: 12px; width:58px; height:58px; }
+}
