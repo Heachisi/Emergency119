@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import Header from './Header';
+import Header from '../components/Header'; 
 import FireFighter from '../images/fireFighter.png';
 import FireGoblinBody from '../images/fireGoblinBody.png';
 import Emergency from '../images/EmergencyWhite.png';
