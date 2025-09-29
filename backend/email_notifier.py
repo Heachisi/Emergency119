@@ -4,8 +4,11 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+# 프로젝트 루트의 .env 파일을 명시적으로 로드
+env_path = Path(__file__).parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 class EmailNotifier:
     def __init__(self):
@@ -13,18 +16,25 @@ class EmailNotifier:
         self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
         self.smtp_user = os.getenv('SMTP_USER')
         self.smtp_pass = os.getenv('SMTP_PASS')
-        self.alert_email = os.getenv('ALERT_EMAIL')
+
+        # 여러 이메일 주소를 리스트로 변환
+        alert_email_raw = os.getenv('ALERT_EMAIL', '')
+        if alert_email_raw:
+            # 쉼표로 분리하고 공백 제거
+            self.alert_emails = [email.strip().strip('"') for email in alert_email_raw.split(',')]
+        else:
+            self.alert_emails = []
 
     def send_emergency_alert(self, job_id, scores, timestamp=None):
         """119 호출 상황 시 긴급 메일 발송"""
-        if not all([self.smtp_user, self.smtp_pass, self.alert_email]):
-            print("⚠️ 이메일 설정이 완료되지 않았습니다.")
+        if not all([self.smtp_user, self.smtp_pass]) or not self.alert_emails:
+            print("WARNING: Email configuration is incomplete.")
             return False
 
         try:
             msg = MIMEMultipart()
             msg['From'] = self.smtp_user
-            msg['To'] = self.alert_email
+            msg['To'] = ', '.join(self.alert_emails)
             msg['Subject'] = f"🚨 [긴급] 화재 감지 알림 - Job {job_id}"
 
             html_body = f"""
@@ -60,17 +70,19 @@ class EmailNotifier:
                 server.starttls()
                 server.login(self.smtp_user, self.smtp_pass)
                 text = msg.as_string()
-                server.sendmail(self.smtp_user, self.alert_email, text)
+                server.sendmail(self.smtp_user, self.alert_emails, text)
 
-            print(f"✅ 긴급 알림 메일 발송 완료: {self.alert_email}")
+            print(f"SUCCESS: Emergency email sent to: {', '.join(self.alert_emails)}")
             return True
 
         except Exception as e:
-            print(f"❌ 메일 발송 실패: {e}")
+            print(f"ERROR: Email sending failed: {e}")
             return False
 
 # 사용 예시
 if __name__ == "__main__":
     notifier = EmailNotifier()
+    print(f"Alert emails: {notifier.alert_emails}")
     test_scores = {'fire': 0.65, 'smoke': 0.45, 'hazard': 0.87}
-    notifier.send_emergency_alert("test123", test_scores, 45.2)
+    result = notifier.send_emergency_alert("test123", test_scores, 45.2)
+    print(f"Result: {result}")

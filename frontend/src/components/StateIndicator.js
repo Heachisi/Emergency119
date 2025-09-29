@@ -3,6 +3,11 @@ import React, { useState, useEffect } from 'react';
 import './StateIndicator.css';
 
 const StateIndicator = ({ currentState, scores, jobId, timestamp }) => {
+  // 불 점수가 15% 미만이고 hazard가 45% 미만이면 상태를 NORMAL로 강제 설정
+  const fireScore = scores.fire * 100;
+  const hazardScore = scores.hazard * 100;
+  const displayState = (fireScore < 15 && hazardScore < 45) ? 'NORMAL' : currentState;
+
   const getStateInfo = (state) => {
     switch (state) {
       case 'NORMAL':
@@ -62,7 +67,7 @@ const StateIndicator = ({ currentState, scores, jobId, timestamp }) => {
     }
   };
 
-  const stateInfo = getStateInfo(currentState);
+  const stateInfo = getStateInfo(displayState);
   const maxScore = Math.max(scores.fire, scores.smoke, scores.hazard);
 
   const getThreatLevel = () => {
@@ -117,12 +122,18 @@ const StateIndicator = ({ currentState, scores, jobId, timestamp }) => {
       // 상단: 상태 추가
         const [latchedCall119, setLatchedCall119] = useState(false);
 
-      // currentState 변할 때 한 번이라도 CALL_119이면 래치 ON
+      // CALL_119이거나 위험도가 60% 이상인 FIRE_GROWING 상태일 때 래치 ON
       useEffect(() => {
-        if (currentState === 'CALL_119') {
+        const shouldShowButton = (
+          (currentState === 'CALL_119' && (fireScore >= 15 || hazardScore >= 45)) ||
+          (currentState === 'FIRE_GROWING' && hazardScore >= 60)
+        );
+
+        if (shouldShowButton) {
+          console.log('🚨 119 호출 버튼 래치 ON:', { fireScore, hazardScore, currentState });
           setLatchedCall119(true);
         }
-      }, [currentState]);
+      }, [currentState, fireScore, hazardScore]);
 
       // (선택) 새로운 분석 영상/잡 시작 시 래치 초기화
       useEffect(() => {

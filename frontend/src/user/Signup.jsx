@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Emergency from '../images/EmergencyRed.png';
 import NineOneOne from '../images/119Orange.png';
 import Extinguisher from '../images/extinguisher.png';
-import Header from './Header';
+import Header from '../components/Header';
 import { supabase } from '../supabase.js';
 
 const Signup = () => {

@@ -12,7 +12,8 @@ const VideoPlayer = ({
   timestamp = null,
   currentData = null,
   onPlayPauseChange = () => {},
-  onVideoReplay = () => {}
+  onVideoReplay = () => {},
+  onSeekTo = null
 }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -22,6 +23,55 @@ const VideoPlayer = ({
   const [volume, setVolume] = useState(1);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [needsManualPlay, setNeedsManualPlay] = useState(false);
+  const [isSeekingFromTimeline, setIsSeekingFromTimeline] = useState(false);
+  const [targetSeekTime, setTargetSeekTime] = useState(null);
+
+  // 외부에서 시간 지정 시크 기능 - 단순화된 버전
+  const seekToTime = useCallback((time) => {
+    const video = videoRef.current;
+    console.log(`🔍 SIMPLE SEEK: ${time}초로 시크 시도`);
+
+    if (!video) {
+      console.error('❌ 비디오 요소가 없습니다');
+      return;
+    }
+
+    if (isNaN(time) || time < 0 || time > video.duration) {
+      console.error('❌ 유효하지 않은 시간:', time);
+      return;
+    }
+
+    // 타임라인에서 시크 중임을 표시
+    setIsSeekingFromTimeline(true);
+    setTargetSeekTime(time);
+
+    console.log(`📍 현재 시간: ${video.currentTime.toFixed(2)}초`);
+    console.log(`🎯 목표 시간: ${time.toFixed(2)}초`);
+
+    // 매우 단순한 시크
+    try {
+      video.currentTime = time;
+      console.log(`✅ 시크 완료 - 현재 시간: ${video.currentTime.toFixed(2)}초`);
+
+      // 플래그 해제
+      setTimeout(() => {
+        setIsSeekingFromTimeline(false);
+        setTargetSeekTime(null);
+        console.log(`🏁 플래그 해제 - 최종 시간: ${video.currentTime.toFixed(2)}초`);
+      }, 500);
+    } catch (error) {
+      console.error('❌ 시크 중 오류:', error);
+      setIsSeekingFromTimeline(false);
+      setTargetSeekTime(null);
+    }
+  }, []);
+
+  // onSeekTo prop이 변경될 때마다 seekToTime 함수를 외부에 노출
+  useEffect(() => {
+    if (onSeekTo) {
+      onSeekTo(seekToTime);
+    }
+  }, [onSeekTo, seekToTime]);
 
   // 영상 메타데이터 로드 및 자동 재생 처리
   useEffect(() => {
@@ -44,11 +94,36 @@ const VideoPlayer = ({
     };
 
     const handlePlay = () => {
+      console.log('🎮 handlePlay 호출 - 상태 확인:', {
+        currentTime: video.currentTime,
+        isSeekingFromTimeline,
+        targetSeekTime,
+        timestamp: Date.now()
+      });
+
       setIsPlaying(true);
       setNeedsManualPlay(false);
       onPlayPauseChange(true);
 
-      // 영상이 처음부터 재생되는 경우 자동 재분석 트리거
+      // 타임라인에서 시크한 경우 재분석 건너뛰기
+      if (isSeekingFromTimeline || targetSeekTime !== null) {
+        console.log('📍 타임라인에서 시크된 재생 - 재분석 건너뛰기', {
+          currentTime: video.currentTime,
+          targetSeekTime,
+          isSeekingFromTimeline
+        });
+
+        // 시크 플래그 해제
+        setTimeout(() => {
+          setIsSeekingFromTimeline(false);
+          setTargetSeekTime(null);
+          console.log('🏁 시크 플래그 해제됨');
+        }, 1000);
+
+        return;
+      }
+
+      // 영상이 처음부터 재생되는 경우에만 자동 재분석 트리거
       if (video.currentTime <= 1) {
         console.log('🎬 영상 처음부터 재생 - 자동 재분석 시작');
         onVideoReplay();
@@ -66,6 +141,12 @@ const VideoPlayer = ({
 
     const handleSeeked = () => {
       console.log('⏭️ 영상 시간 변경:', video.currentTime);
+
+      // 타임라인에서 시크한 경우 추가 처리 없음
+      if (isSeekingFromTimeline || targetSeekTime !== null) {
+        console.log('📍 타임라인 시크 완료 - 추가 처리 없음');
+        return;
+      }
     };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
@@ -73,7 +154,7 @@ const VideoPlayer = ({
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
     video.addEventListener('ended', handleEnded);
-    video.addEventListener('seeked', handleSeeked);
+    // video.addEventListener('seeked', handleSeeked); // 임시 제거
 
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
@@ -81,7 +162,7 @@ const VideoPlayer = ({
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
       video.removeEventListener('ended', handleEnded);
-      video.removeEventListener('seeked', handleSeeked);
+      // video.removeEventListener('seeked', handleSeeked); // 임시 제거
     };
   }, [videoUrl, onPlayPauseChange]);
 
@@ -163,19 +244,25 @@ const VideoPlayer = ({
 
   }, []);
 
-  // 프레임 업데이트 시 캔버스 다시 그리기 (HTML 테스트와 동일)
+  // 프레임 업데이트 시 캔버스 다시 그리기 (불 15% 미만이고 hazard 45% 미만일 때 바운딩 박스 숨기기)
   useEffect(() => {
-    if (rawData && rawData.boxes && rawData.boxes.length > 0) {
-      drawBoxes(rawData);
-    } else {
-      // 박스가 없으면 캔버스 클리어
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // 불 점수가 15% 미만이고 hazard가 45% 미만이면 바운딩 박스 숨기기
+    const fireScore = scores.fire * 100;
+    const hazardScore = scores.hazard * 100;
+    const shouldHideBoxes = fireScore < 15 && hazardScore < 45;
+
+    if (shouldHideBoxes || !rawData || !rawData.boxes || rawData.boxes.length === 0) {
+      // 박스가 없거나 조건에 맞으면 캔버스 클리어
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      return;
     }
-  }, [rawData, drawBoxes]);
+
+    drawBoxes(rawData);
+  }, [rawData, drawBoxes, scores.fire, scores.hazard]);
 
   // 윈도우 리사이즈 시 캔버스 업데이트 (HTML 테스트와 동일)
   useEffect(() => {

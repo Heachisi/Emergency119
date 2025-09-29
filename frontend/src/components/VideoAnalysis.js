@@ -1,7 +1,9 @@
 // frontend/src/components/VideoAnalysis.js
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import Header from '../user/Header';
+
 import Footer from './Footer';
 import VideoUpload from './VideoUpload';
 import VideoPlayer from './VideoPlayer';
@@ -14,6 +16,7 @@ const DEBUG = false; // false로 설정하면 console 로그가 거의 출력되
 
 function VideoAnalysis() {
   const navigate = useNavigate();
+
   const [jobId, setJobId] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
   const [currentData, setCurrentData] = useState({
@@ -30,12 +33,14 @@ function VideoAnalysis() {
   const eventSourceRef = useRef(null);
 
   useEffect(() => {
+
     return () => {
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
       }
     };
   }, []);
+
 
   const handleLogout = () => {
     // 로그아웃 시 모든 상태 초기화
@@ -180,6 +185,7 @@ function VideoAnalysis() {
       return;
     }
 
+
     try {
       if (DEBUG) console.log('재분석 시작:', jobId);
 
@@ -279,6 +285,7 @@ function VideoAnalysis() {
     }
   };
 
+
   return (
     <div className="video-analysis-page">
       <Header />
@@ -369,6 +376,7 @@ function VideoAnalysis() {
                 <Timeline
                   events={events}
                   currentFrame={events.length - 1}
+
                 />
               )}
             </div>

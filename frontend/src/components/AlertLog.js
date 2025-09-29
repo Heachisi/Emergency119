@@ -7,8 +7,14 @@ const AlertLog = ({ currentState, scores, timestamp }) => {
   const [lastState, setLastState] = useState('NORMAL');
 
   useEffect(() => {
-    // 상태가 변경되었을 때만 로그 추가
-    if (currentState !== lastState && currentState !== 'NORMAL') {
+    // 불 점수가 15% 미만이면 로그 추가하지 않음 (단, hazard가 45% 이상이면 허용)
+    const fireScore = scores.fire * 100;
+    const hazardScore = scores.hazard * 100;
+    const shouldSkipLog = fireScore < 15 && hazardScore < 45;
+
+    // 상태가 변경되었을 때만 로그 추가 (조건 충족 시에만)
+    if (currentState !== lastState && currentState !== 'NORMAL' && !shouldSkipLog) {
+      console.log('📝 알람 로그 추가:', { currentState, fireScore, hazardScore });
       const newLog = {
         id: Date.now(),
         timestamp: new Date(),

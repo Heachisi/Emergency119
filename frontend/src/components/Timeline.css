@@ -59,7 +59,7 @@
   border-radius: 12px;
 }
 
-.timeline {
+.timeline-table {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 16px;
   overflow: hidden;
@@ -67,36 +67,49 @@
 }
 
 .timeline-header {
-  display: grid;
-  grid-template-columns: 1fr 1fr 80px 80px;
-  gap: 15px;
-  padding: 15px 20px;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid !important;
+  grid-template-columns: 100px 150px 180px 100px 100px 100px !important;
+  gap: 15px !important;
+  padding: 18px 25px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  min-height: 55px !important;
+  align-items: center !important;
 }
 
 .timeline-events {
-  max-height: 300px;
+  max-height: 600px;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 .timeline-event {
-  display: grid;
-  grid-template-columns: 1fr 1fr 80px 80px;
-  gap: 15px;
-  padding: 12px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.2s ease;
-  align-items: center;
+  display: grid !important;
+  grid-template-columns: 100px 150px 180px 100px 100px 100px !important;
+  gap: 15px !important;
+  padding: 15px 25px !important;
+  min-height: 50px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.2s ease !important;
+  align-items: center !important;
+  cursor: pointer !important;
 }
 
 .timeline-event:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(2px);
+}
+
+.timeline-event:active {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .timeline-event.current {
@@ -107,7 +120,26 @@
 .event-time {
   color: rgba(255, 255, 255, 0.8);
   font-family: 'Courier New', monospace;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.event-time.clickable {
+  color: #4fc3f7;
+   /* text-decoration: underline; */
+   cursor: pointer; 
+}
+
+.event-time.clickable:hover {
+  color: #81d4fa;
+  text-decoration: none;
+}
+
+.event-frame {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .event-state {
@@ -116,10 +148,10 @@
 }
 
 .state-indicator {
-  padding: 4px 12px;
+  padding: 6px 16px;
   border-radius: 15px;
   color: white;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -129,7 +161,7 @@
 .event-score {
   text-align: center;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
 }
 
 .event-score.fire {
@@ -137,7 +169,12 @@
 }
 
 .event-score.smoke {
-  color: #888888;
+  color: #aaaaaa;
+}
+
+.event-score.hazard {
+  color: #ff9800;
+  font-weight: 700;
 }
 
 .timeline-more {
@@ -193,21 +230,100 @@
 
 /* 스크롤바 스타일 */
 .timeline-events::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .timeline-events::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  margin: 4px 0;
 }
 
 .timeline-events::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(76, 175, 80, 0.6), rgba(76, 175, 80, 0.4));
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .timeline-events::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: linear-gradient(180deg, rgba(76, 175, 80, 0.8), rgba(76, 175, 80, 0.6));
+}
+
+/* 컨트롤 패널 스타일 */
+.timeline-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.control-btn {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.control-btn.active {
+  background: rgba(76, 175, 80, 0.3);
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.filter-select {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.filter-select option {
+  background: #2c3e50;
+  color: white;
+}
+
+.show-all-btn {
+  margin-left: 10px;
+  padding: 4px 8px;
+  background: rgba(76, 175, 80, 0.2);
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  color: #4caf50;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.show-all-btn:hover {
+  background: rgba(76, 175, 80, 0.3);
+}
+
+.debug-info {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 10px;
+  word-break: break-all;
 }
 
 /* 반응형 디자인 */
@@ -216,26 +332,53 @@
     padding: 20px 15px;
   }
 
-  .timeline-header,
-  .timeline-event {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+  .timeline-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
   }
 
-  .timeline-header span:nth-child(3),
+  .control-buttons {
+    justify-content: center;
+  }
+
+  .timeline-header,
+  .timeline-event {
+    grid-template-columns: 80px 130px 130px;
+    gap: 12px;
+    font-size: 0.9rem;
+    padding: 12px 20px;
+  }
+
   .timeline-header span:nth-child(4),
-  .timeline-event .event-score {
+  .timeline-header span:nth-child(5),
+  .timeline-header span:nth-child(6),
+  .timeline-event .event-score.fire,
+  .timeline-event .event-score.smoke,
+  .timeline-event .event-score.hazard {
     display: none;
   }
 
   .timeline-stats {
-    flex-direction: column;
-    gap: 10px;
+    justify-content: space-around;
   }
 
   .summary-grid {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+
+  @media (max-width: 480px) {
+    .timeline-header,
+    .timeline-event {
+      grid-template-columns: 50px 1fr;
+      gap: 10px;
+    }
+
+    .timeline-header span:nth-child(3),
+    .timeline-event .event-state {
+      display: none;
+    }
   }
 }
 
