@@ -1,21 +1,22 @@
 // frontend/src/components/VideoAnalysis.js
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from './Header';
+
+import Header from '../user/Header';
+
 import Footer from './Footer';
 import VideoUpload from './VideoUpload';
 import VideoPlayer from './VideoPlayer';
 import Timeline from './Timeline';
 import StateIndicator from './StateIndicator';
 import AlertLog from './AlertLog';
-import Login from './Login';
 
 // 디버그 모드 설정
 const DEBUG = false; // false로 설정하면 console 로그가 거의 출력되지 않음
 
 function VideoAnalysis() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+
   const [jobId, setJobId] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
   const [currentData, setCurrentData] = useState({
@@ -30,14 +31,8 @@ function VideoAnalysis() {
   const [error, setError] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
   const eventSourceRef = useRef(null);
-  const videoSeekRef = useRef(null);
 
   useEffect(() => {
-    // 로그인 상태 확인
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
 
     return () => {
       if (eventSourceRef.current) {
@@ -46,13 +41,8 @@ function VideoAnalysis() {
     };
   }, []);
 
-  const handleLogin = (userData) => {
-    setUser(userData);
-  };
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
     // 로그아웃 시 모든 상태 초기화
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
@@ -195,7 +185,6 @@ function VideoAnalysis() {
       return;
     }
 
-    console.log('🔄 handleRestart 호출 - 스택 트레이스:', new Error().stack);
 
     try {
       if (DEBUG) console.log('재분석 시작:', jobId);
@@ -296,24 +285,10 @@ function VideoAnalysis() {
     }
   };
 
-  // 타임라인에서 시간 클릭 시 로그만 출력
-  const handleTimelineTimeClick = (timestamp) => {
-    console.log(`🕐 타임라인 시간 클릭: ${timestamp}초`);
-  };
-
-  // VideoPlayer에서 seekTo 함수 참조 받기
-  const handleSeekToRef = (seekFunction) => {
-    videoSeekRef.current = seekFunction;
-  };
-
-  // 로그인하지 않은 경우 로그인 화면 표시
-  if (!user) {
-    return <Login onLogin={handleLogin} />;
-  }
 
   return (
     <div className="video-analysis-page">
-      <Header user={user} onLogout={handleLogout} />
+      <Header />
 
       <main className="main-content">
         <div className="container">
@@ -377,7 +352,6 @@ function VideoAnalysis() {
                       currentData={currentData}
                       onPlayPauseChange={handleVideoPlayPause}
                       onVideoReplay={handleRestart}
-                      onSeekTo={handleSeekToRef}
                     />
                   </div>
 
@@ -402,7 +376,7 @@ function VideoAnalysis() {
                 <Timeline
                   events={events}
                   currentFrame={events.length - 1}
-                  onTimeClick={handleTimelineTimeClick}
+
                 />
               )}
             </div>
