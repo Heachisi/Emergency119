@@ -1,6 +1,7 @@
 // frontend/src/App.js
 import React, { useState, useRef, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import ChatbotWidget from "./components/ChatbotWidget"; 
 import './App.css';
 
 // 기존 컴포넌트들
@@ -42,6 +43,7 @@ function App() {
           <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />
         </Routes>
       </div>
+      <ChatbotWidget />
     </Router>
   );
 }
