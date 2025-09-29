@@ -4,7 +4,7 @@ import { supabase } from '../supabase.js';
 import Emergency from '../images/EmergencyRed.png';
 import NineOneOne from '../images/119Orange.png';
 import Extinguisher from '../images/extinguisher.png';
-import Header from '../components/Header';
+import Header from './Header';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -71,7 +71,7 @@ const Login = () => {
         const userId = data.user.user_metadata?.user_id || formData.email.split('@')[0];
 
         alert('로그인 성공!');
-        navigate('/');
+        navigate('/analysis');
       }
     } catch (error) {
       console.error('로그인 오류:', error);
@@ -114,7 +114,6 @@ const Login = () => {
       <div style={{
         width: "100%",
         height: "calc(100vh - 45px)",
-        background: "linear-gradient(to bottom, #fefaedff, #fff4dfff)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -138,7 +137,7 @@ const Login = () => {
         {/* 로그인 전체 박스 */}
         <div style={{
           width: "400px",
-          background: "#FFE4B5",
+          background: "#ffc4b9ff",
           border: "2px solid #FF6B35",
           borderRadius: "20px",
           padding: "20px 30px",
@@ -173,7 +172,7 @@ const Login = () => {
           {/* 로그인 내부 박스 */}
           <div style={{
             width: "330px",
-            background: "white",
+            background: "linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)",
             borderRadius: "20px",
             padding: "20px",
             textAlign: "center",

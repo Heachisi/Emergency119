@@ -1,21 +1,19 @@
 // frontend/src/components/VideoAnalysis.js
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from './Header';
+import Header from '../user/Header';
 import Footer from './Footer';
 import VideoUpload from './VideoUpload';
 import VideoPlayer from './VideoPlayer';
 import Timeline from './Timeline';
 import StateIndicator from './StateIndicator';
 import AlertLog from './AlertLog';
-import Login from './Login';
 
 // 디버그 모드 설정
 const DEBUG = false; // false로 설정하면 console 로그가 거의 출력되지 않음
 
 function VideoAnalysis() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
   const [jobId, setJobId] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
   const [currentData, setCurrentData] = useState({
@@ -32,12 +30,6 @@ function VideoAnalysis() {
   const eventSourceRef = useRef(null);
 
   useEffect(() => {
-    // 로그인 상태 확인
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-
     return () => {
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
@@ -45,13 +37,7 @@ function VideoAnalysis() {
     };
   }, []);
 
-  const handleLogin = (userData) => {
-    setUser(userData);
-  };
-
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
     // 로그아웃 시 모든 상태 초기화
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
@@ -293,14 +279,9 @@ function VideoAnalysis() {
     }
   };
 
-  // 로그인하지 않은 경우 로그인 화면 표시
-  if (!user) {
-    return <Login onLogin={handleLogin} />;
-  }
-
   return (
     <div className="video-analysis-page">
-      <Header user={user} onLogout={handleLogout} />
+      <Header />
 
       <main className="main-content">
         <div className="container">

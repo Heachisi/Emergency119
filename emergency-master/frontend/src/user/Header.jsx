@@ -14,6 +14,14 @@ const Header = () => {
         window.location.href = '/user/signup';
     };
 
+    const navigateToAnalysis = () => {
+        window.location.href = '/analysis';
+    };
+
+    const navigateToSmokeDetect = () => {
+        window.location.href = '/smokedetect';
+    };
+
     // 로그인 상태 확인
     useEffect(() => {
         // 현재 세션 확인
@@ -57,11 +65,13 @@ const Header = () => {
     };
 
     return (
-        <header
+        <>
+            {isLoggedIn ? (
+                <header
             style={{
                 width: "100%",
                 height: "45px",
-                background: "#b52929ff",
+                background: "#a11919ff",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -75,8 +85,40 @@ const Header = () => {
                 fontWeight: 800,
                 letterSpacing: "1px"
             }}>Emergency 119</p>
-            {isLoggedIn ? (
                 <div style={{ display: "flex", alignItems: "center" }}>
+                    {/* 네비게이션 메뉴 */}
+                    <nav style={{ display: "flex", alignItems: "center", marginRight: "20px" }}>
+                        <button
+                            onClick={navigateToAnalysis}
+                            style={{
+                                background: "transparent",
+                                border: "none",
+                                color: "white",
+                                fontSize: "14px",
+                                fontWeight: "500",
+                                cursor: "pointer",
+                                textDecoration: "none",
+                                marginRight: "15px"
+                            }}
+                        >
+                            Analysis
+                        </button>
+                        <button
+                            onClick={navigateToSmokeDetect}
+                            style={{
+                                background: "transparent",
+                                border: "none",
+                                color: "white",
+                                fontSize: "14px",
+                                fontWeight: "500",
+                                cursor: "pointer",
+                                textDecoration: "none",
+                                marginRight: "15px"
+                            }}
+                        >
+                            Smoke Detect
+                        </button>
+                    </nav>
                     <span style={{
                         marginRight: "15px",
                         fontSize: "14px",
@@ -99,7 +141,26 @@ const Header = () => {
                         로그아웃
                     </button>
                 </div>
+                </header>
             ) : (
+                <header
+            style={{
+                width: "100%",
+                height: "45px",
+                background: "#a11919ff",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                color: "white",
+                padding: "0 10px"
+            }}>
+            <p style={{
+                margin: 0,
+                fontFamily: "'Playfair Display', serif", // 고급스러운 세리프
+                fontSize: "20px",
+                fontWeight: 800,
+                letterSpacing: "1px"
+            }}>Emergency 119</p>
                 <div style={{ display: "flex", alignItems: "center" }}>
                     <button 
                         onClick={navigateToLogin}
@@ -131,8 +192,9 @@ const Header = () => {
                         회원가입
                     </button>
                 </div>
+                </header>
             )}
-        </header>
+       </> 
     );
 };
 

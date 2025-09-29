@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Emergency from '../images/EmergencyRed.png';
 import NineOneOne from '../images/119Orange.png';
 import Extinguisher from '../images/extinguisher.png';
-import Header from '../components/Header';
+import Header from './Header';
 
 const Resetpw = () => {
     const [userId, setUserId] = useState('');

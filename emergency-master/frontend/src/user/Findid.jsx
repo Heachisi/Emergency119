@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Emergency from '../images/EmergencyRed.png';
 import NineOneOne from '../images/119Orange.png';
 import Extinguisher from '../images/extinguisher.png';
-import Header from '../components/Header';
+import Header from './Header';
 
 const Findid = () => {
   const [email, setEmail] = useState('');
@@ -22,7 +22,6 @@ const Findid = () => {
       <div style={{
         width: "100%",
         height: "calc(100vh - 45px)",
-        background: "linear-gradient(to bottom, #fefaedff, #fff4dfff)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
