@@ -1,0 +1,412 @@
+/* Timeline.css - 분석 타임라인 컴포넌트 스타일 */
+
+.timeline-container {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 25px;
+  margin-top: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.timeline-container h3 {
+  color: white;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  text-align: center;
+  background: linear-gradient(45deg, #ffffff, #e3e3e3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.timeline-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 25px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.timeline-empty {
+  text-align: center;
+  padding: 40px;
+  color: rgba(255, 255, 255, 0.6);
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+}
+
+.timeline-table {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.timeline-header {
+  display: grid !important;
+  grid-template-columns: 100px 150px 180px 100px 100px 100px !important;
+  gap: 15px !important;
+  padding: 18px 25px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  min-height: 55px !important;
+  align-items: center !important;
+}
+
+.timeline-events {
+  max-height: 600px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.timeline-event {
+  display: grid !important;
+  grid-template-columns: 100px 150px 180px 100px 100px 100px !important;
+  gap: 15px !important;
+  padding: 15px 25px !important;
+  min-height: 50px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.2s ease !important;
+  align-items: center !important;
+  cursor: pointer !important;
+}
+
+.timeline-event:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(2px);
+}
+
+.timeline-event:active {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.timeline-event.current {
+  background: rgba(0, 255, 136, 0.1);
+  border-left: 4px solid #00ff88;
+}
+
+.event-time {
+  color: rgba(255, 255, 255, 0.8);
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.event-time.clickable {
+  color: #4fc3f7;
+   /* text-decoration: underline; */
+   cursor: pointer; 
+}
+
+.event-time.clickable:hover {
+  color: #81d4fa;
+  text-decoration: none;
+}
+
+.event-frame {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.event-state {
+  display: flex;
+  align-items: center;
+}
+
+.state-indicator {
+  padding: 6px 16px;
+  border-radius: 15px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.event-score {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.event-score.fire {
+  color: #ff6b6b;
+}
+
+.event-score.smoke {
+  color: #aaaaaa;
+}
+
+.event-score.hazard {
+  color: #ff9800;
+  font-weight: 700;
+}
+
+.timeline-more {
+  text-align: center;
+  padding: 15px;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 0.8rem;
+}
+
+.timeline-summary {
+  margin-top: 25px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.timeline-summary h4 {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.summary-item span {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+}
+
+.summary-item strong {
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* 스크롤바 스타일 */
+.timeline-events::-webkit-scrollbar {
+  width: 8px;
+}
+
+.timeline-events::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  margin: 4px 0;
+}
+
+.timeline-events::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(76, 175, 80, 0.6), rgba(76, 175, 80, 0.4));
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.timeline-events::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(76, 175, 80, 0.8), rgba(76, 175, 80, 0.6));
+}
+
+/* 컨트롤 패널 스타일 */
+.timeline-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.control-btn {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.control-btn.active {
+  background: rgba(76, 175, 80, 0.3);
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.filter-select {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.filter-select option {
+  background: #2c3e50;
+  color: white;
+}
+
+.show-all-btn {
+  margin-left: 10px;
+  padding: 4px 8px;
+  background: rgba(76, 175, 80, 0.2);
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  color: #4caf50;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.show-all-btn:hover {
+  background: rgba(76, 175, 80, 0.3);
+}
+
+.debug-info {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 10px;
+  word-break: break-all;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .timeline-container {
+    padding: 20px 15px;
+  }
+
+  .timeline-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+
+  .control-buttons {
+    justify-content: center;
+  }
+
+  .timeline-header,
+  .timeline-event {
+    grid-template-columns: 80px 130px 130px;
+    gap: 12px;
+    font-size: 0.9rem;
+    padding: 12px 20px;
+  }
+
+  .timeline-header span:nth-child(4),
+  .timeline-header span:nth-child(5),
+  .timeline-header span:nth-child(6),
+  .timeline-event .event-score.fire,
+  .timeline-event .event-score.smoke,
+  .timeline-event .event-score.hazard {
+    display: none;
+  }
+
+  .timeline-stats {
+    justify-content: space-around;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  @media (max-width: 480px) {
+    .timeline-header,
+    .timeline-event {
+      grid-template-columns: 50px 1fr;
+      gap: 10px;
+    }
+
+    .timeline-header span:nth-child(3),
+    .timeline-event .event-state {
+      display: none;
+    }
+  }
+}
+
+/* 애니메이션 효과 */
+.timeline-event {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.timeline-event.current .state-indicator {
+  animation: currentPulse 2s infinite;
+}
+
+@keyframes currentPulse {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(0, 255, 136, 0.6);
+  }
+}
