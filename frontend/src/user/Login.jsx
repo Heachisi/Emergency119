@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase.js';
 import Emergency from '../images/EmergencyRed.png';
 import NineOneOne from '../images/119Orange.png';
-import Extinguisher from '../images/extinguisher.png';
 import Header from '../user/Header';
 
 const Login = () => {
@@ -100,10 +99,36 @@ const Login = () => {
     window.location.href = '/user/findid';
   };
 
-  const navigateToResetpw = () => {
-    window.location.href = '/user/resetpw';
+  const handleResetPassword = async () => {
+    const email = prompt('비밀번호를 재설정할 이메일 주소를 입력해주세요:');
+
+    if (!email) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('올바른 이메일 형식을 입력해주세요.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/user/resetpw`
+      });
+
+      if (error) throw error;
+
+      alert('비밀번호 재설정 링크를 이메일로 발송했습니다.\n메일함을 확인해주세요.');
+    } catch (error) {
+      console.error('비밀번호 재설정 요청 오류:', error);
+      // 보안을 위해 항상 동일한 메시지 표시
+      alert('비밀번호 재설정 링크를 이메일로 발송했습니다.\n메일함을 확인해주세요.');
+    } finally {
+      setLoading(false);
+    }
   };
-  
+
   const navigateToSignup = () => {
     window.location.href = '/user/signup';
   };
@@ -114,26 +139,11 @@ const Login = () => {
       <div style={{
         width: "100%",
         height: "calc(100vh - 45px)",
-        background: "linear-gradient(to bottom, #fefaedff, #fff4dfff)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         position: "relative"
       }}>
-
-        {/* 소화기 이미지 - 오른쪽 하단 */}
-        <img
-          src={Extinguisher}
-          alt="소화기"
-          style={{
-            cursor: "pointer",
-            position: "absolute",
-            bottom: "20px",
-            right: "20px",
-            width: "80px",
-            height: "auto"
-          }}
-        />
 
         {/* 로그인 전체 박스 */}
         <div style={{
@@ -191,7 +201,7 @@ const Login = () => {
             }}>Log in</h2>
 
             {/* 입력 필드들 */}
-            <div style={{ marginBottom: "15px", textAlign: "left" }}>
+            <div style={{ marginBottom: "15px", textAlign: "left", color:"black" }}>
               <label style={{
                 display: "block",
                 marginBottom: "5px",
@@ -216,7 +226,7 @@ const Login = () => {
               />
             </div>
 
-            <div style={{ marginBottom: "25px", textAlign: "left" }}>
+            <div style={{ marginBottom: "25px", textAlign: "left", color:"black" }}>
               <label style={{
                 display: "block",
                 marginBottom: "5px",
@@ -268,11 +278,16 @@ const Login = () => {
             color: "#FF6B35",
             marginTop: "20px"
           }}>
-            <span onClick={navigateToSignup} style={{ cursor: "pointer", marginRight: "10px" }}>회원가입</span>
-            <span>|</span>
-            <span onClick={navigateToFindid} style={{ cursor: "pointer", margin: "0 10px" }}>아이디 찾기</span>
-            <span>|</span>
-            <span onClick={navigateToResetpw} style={{ cursor: "pointer", marginLeft: "10px" }}>비밀번호 재설정</span>
+            <span
+              onClick={handleResetPassword}
+              style={{
+                cursor: "pointer",
+                marginLeft: "10px",
+                textDecoration: "underline"
+              }}
+            >
+              비밀번호를 잊으셨나요?
+            </span>
           </div>
         </div>
       </div>

@@ -589,3 +589,143 @@ select:focus {
 .App .animate {
   will-change: transform, opacity;
 }
+
+/* 단순화된 대시보드 헤더 */
+.dashboard-header-simple {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 30px;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.video-selector-wrapper {
+  flex: 1;
+  max-width: 600px;
+}
+
+.video-selector-wrapper h3 {
+  margin-bottom: 12px;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
+.status-section {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.analysis-complete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.complete-icon {
+  font-size: 1.2rem;
+}
+
+.reset-button-simple {
+  background: linear-gradient(45deg, #6c757d, #495057);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.reset-button-simple:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(45deg, #5a6268, #3d4449);
+}
+
+/* 비디오 미리보기 */
+.video-preview {
+  padding: 20px;
+}
+
+.video-preview h3 {
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.preview-video {
+  width: 100%;
+  border-radius: 12px;
+  background-color: #000;
+}
+
+/* 비디오 없음 플레이스홀더 */
+.no-video-placeholder {
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  margin-top: 30px;
+}
+
+.placeholder-content {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.placeholder-content h2 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.placeholder-content p {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .dashboard-header-simple {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .video-selector-wrapper {
+    max-width: 100%;
+  }
+
+  .status-section {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .reset-button-simple {
+    width: 100%;
+  }
+}

@@ -154,7 +154,7 @@ const SmokeDetect = () => {
     <>
       <Header />
       <div style={{ maxWidth: 1200, margin: '16px auto', padding: '0 16px' }}>
-        <h2 style={{ marginBottom: 12 }}>화재 감지 시스템 대시보드</h2>
+
 
         {/* 컨트롤 바 */}
         <div style={{ 

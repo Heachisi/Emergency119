@@ -8,7 +8,6 @@ import './App.css';
 import HeroSection from './user/HeroSection';
 import Login from './user/Login';
 import Signup from './user/Signup';
-import Findid from './user/Findid';
 import Resetpw from './user/Resetpw';
 
 //센서 값 및 그래프 출력 페이지
@@ -31,9 +30,9 @@ function App() {
           {/* 사용자 인증 관련 */}
           <Route path="/user/login" element={<Login />} />
           <Route path="/user/signup" element={<Signup />} />
-          <Route path="/user/findid" element={<Findid />} />
           <Route path="/user/resetpw" element={<Resetpw />} />
           
+          {/* 화재 감지 시스템 대시보드 */}
           <Route path="/smokedetect" element={<SmokeDetect />} />
 
           {/* 비디오 분석 페이지 */}

@@ -129,7 +129,8 @@ const Header = () => {
                         width: "100%",
                         background: "#e0e0e0",
                         display: "flex",
-                        borderBottom: "1px solid #bdbdbd"
+                        borderBottom: "1px solid #bdbdbd",
+                        marginBottom:"30px"
                     }}>
                         <button
                             onClick={navigateToAnalysis}
@@ -156,7 +157,7 @@ const Header = () => {
                                 }
                             }}
                         >
-                            Analysis
+                            비디오 분석 시스템
                         </button>
                         
                         <button
@@ -183,7 +184,7 @@ const Header = () => {
                                 }
                             }}
                         >
-                            Smoke Detect
+                            건물 안전 상태
                         </button>
                     </nav>
                 </> 

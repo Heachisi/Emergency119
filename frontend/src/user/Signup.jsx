@@ -2,7 +2,6 @@ import React, { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import Emergency from '../images/EmergencyRed.png';
 import NineOneOne from '../images/119Orange.png';
-import Extinguisher from '../images/extinguisher.png';
 import Header from '../user/Header';
 import { supabase } from '../supabase.js';
 
@@ -209,11 +208,29 @@ const Signup = () => {
     // 이메일 확인 후 처리 (Supabase Auth 사용)
     useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
-        (event, session) => {
-            if (event === 'SIGNED_IN' && session) {
-                // 이메일 인증 완료 후 자동 로그인됨
-                alert('회원가입이 완료되었습니다!');
-                navigate('/user/login');
+        async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+                try {
+                    // public.users 테이블에 사용자 정보 저장
+                    const { error: insertError } = await supabase
+                        .from('users')
+                        .insert({
+                            id: session.user.id,
+                            user_id: session.user.user_metadata?.user_id,
+                            email: session.user.email,
+                            is_active: true
+                        });
+
+                    if (insertError) {
+                        console.error('users 테이블 저장 오류:', insertError);
+                    }
+
+                    alert('회원가입이 완료되었습니다!');
+                    await supabase.auth.signOut(); // 로그아웃 후 로그인 페이지로
+                    navigate('/user/login');
+                } catch (error) {
+                    console.error('회원가입 완료 처리 오류:', error);
+                }
             }
         }
     );
@@ -221,7 +238,7 @@ const Signup = () => {
     return () => {
         authListener.subscription.unsubscribe();
     };
-}, []);
+}, [navigate]);
 
 
     return (
@@ -230,26 +247,12 @@ const Signup = () => {
             <div style={{
                 width: "100%",
                 minHeight: "calc(100vh - 45px)",
-                background: "linear-gradient(to bottom, #fefaedff, #fff4dfff)",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
                 position: "relative",
                 padding: "20px 0"
             }}>
-
-                <img
-                    src={Extinguisher}
-                    alt="소화기"
-                    style={{
-                        cursor: "pointer",
-                        position: "absolute",
-                        bottom: "20px",
-                        right: "20px",
-                        width: "80px",
-                        height: "auto"
-                    }}
-                />
 
                 <div style={{
                     width: "400px",

@@ -5,11 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../user/Header';
 
 import Footer from './Footer';
-import VideoUpload from './VideoUpload';
 import VideoPlayer from './VideoPlayer';
 import Timeline from './Timeline';
 import StateIndicator from './StateIndicator';
 import AlertLog from './AlertLog';
+import SimpleVideoSelector from './SimpleVideoSelector';
 
 // 디버그 모드 설정
 const DEBUG = false; // false로 설정하면 console 로그가 거의 출력되지 않음
@@ -30,6 +30,8 @@ function VideoAnalysis() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [selectedSupabaseVideo, setSelectedSupabaseVideo] = useState(null);
+  const [displayVideoUrl, setDisplayVideoUrl] = useState(null); // 화면에 표시할 비디오 URL
   const eventSourceRef = useRef(null);
 
   useEffect(() => {
@@ -144,22 +146,52 @@ function VideoAnalysis() {
     };
   };
 
-  const handleUploadSuccess = (result) => {
-    if (DEBUG) console.log('업로드 성공:', result.job_id);
-
-    setJobId(result.job_id);
-    setVideoUrl(`http://localhost:8000${result.video_url}`);
-    setIsProcessing(true);
+  // Supabase에서 비디오 선택 시 - 자동으로 분석 시작
+  const handleVideoSelect = async (video) => {
+    console.log('비디오 선택:', video);
+    setSelectedSupabaseVideo(video);
     setError(null);
-    setEvents([]);
 
-    // SSE 연결 시작
-    startSSEConnection(result.job_id);
-  };
+    // 화면에 Supabase 비디오 URL 표시
+    setDisplayVideoUrl(video.storage_url);
 
-  const handleUploadError = (errorMessage) => {
-    setError(`업로드 실패: ${errorMessage}`);
-    setIsProcessing(false);
+    // 자동으로 분석 시작
+    try {
+      setIsProcessing(true);
+
+      // Supabase Storage URL에서 비디오를 가져와 백엔드에 업로드
+      const response = await fetch(video.storage_url);
+      const blob = await response.blob();
+
+      // Blob을 File 객체로 변환
+      const file = new File([blob], video.filename, { type: 'video/mp4' });
+
+      // 백엔드 업로드 API 호출
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadResponse = await fetch('http://localhost:8000/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Upload failed: ${uploadResponse.status}`);
+      }
+
+      const result = await uploadResponse.json();
+
+      // 분석 시작
+      setJobId(result.job_id);
+      setVideoUrl(`http://localhost:8000${result.video_url}`);
+      setEvents([]);
+      startSSEConnection(result.job_id);
+
+    } catch (err) {
+      console.error('비디오 분석 시작 오류:', err);
+      setError(`비디오 분석 시작 실패: ${err.message}`);
+      setIsProcessing(false);
+    }
   };
 
   const handleReset = () => {
@@ -168,6 +200,8 @@ function VideoAnalysis() {
     }
     setJobId(null);
     setVideoUrl(null);
+    setDisplayVideoUrl(null);
+    setSelectedSupabaseVideo(null);
     setCurrentData({
       scores: { fire: 0, smoke: 0, hazard: 0 },
       detections: { fire: [], smoke: [], person: [] },
@@ -177,90 +211,6 @@ function VideoAnalysis() {
     setEvents([]);
     setIsProcessing(false);
     setError(null);
-  };
-
-  const handleRestart = async () => {
-    if (!jobId) {
-      setError('분석할 영상이 없습니다.');
-      return;
-    }
-
-
-    try {
-      if (DEBUG) console.log('재분석 시작:', jobId);
-
-      // API 상태 먼저 확인
-      try {
-        const testResponse = await fetch('http://localhost:8000/test');
-        console.log('백엔드 상태 확인:', testResponse.status);
-        if (testResponse.ok) {
-          const testData = await testResponse.json();
-          console.log('사용 가능한 jobs:', testData.jobs);
-        }
-      } catch (testError) {
-        console.error('백엔드 연결 테스트 실패:', testError);
-      }
-
-      const response = await fetch(`http://localhost:8000/jobs/${jobId}/restart`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('재분석 API 응답:', response.status, errorData);
-        console.error('요청 URL:', `http://localhost:8000/jobs/${jobId}/restart`);
-        throw new Error(`HTTP ${response.status}: ${errorData}`);
-      }
-
-      const result = await response.json();
-      if (DEBUG) console.log('재분석 응답:', result);
-
-      // 기존 연결 완전 정리
-      if (eventSourceRef.current) {
-        console.log('기존 SSE 연결 정리 중...');
-        eventSourceRef.current.close();
-        eventSourceRef.current = null;
-      }
-
-      // 상태 초기화
-      setCurrentData({
-        scores: { fire: 0, smoke: 0, hazard: 0 },
-        detections: { fire: [], smoke: [], person: [] },
-        state: 'NORMAL',
-        timestamp: null,
-        videoMeta: { width: 640, height: 480 }
-      });
-      setEvents([]);
-      setIsProcessing(true);
-      setError(null);
-
-      // 영상을 처음부터 재생하도록 설정
-      const videoElement = document.querySelector('video');
-      if (videoElement) {
-        videoElement.currentTime = 0;
-        videoElement.play().catch(console.error);
-      }
-
-      // 잠시 대기 후 새 SSE 연결 시작 (더 안전하게)
-      setTimeout(() => {
-        console.log('새 SSE 연결 시작...');
-        startSSEConnection(jobId);
-      }, 1000);
-
-    } catch (error) {
-      console.error('재분석 오류:', error);
-      console.error('에러 상세:', error.stack);
-
-      if (error.message.includes('404')) {
-        setError('재분석 실패: 백엔드 서버를 재시작해주세요. (python main.py)');
-      } else {
-        setError(`재분석 실패: ${error.message}`);
-      }
-      setIsProcessing(false);
-    }
   };
 
   // 영상 재생/일시정지 제어
@@ -293,9 +243,7 @@ function VideoAnalysis() {
       <main className="main-content">
         <div className="container">
           {/* 네비게이션 버튼 */}
-          <div className="navigation-bar">
-            <h1 className="page-title">비디오 분석 시스템</h1>
-          </div>
+
 
           {error && (
             <div className="error-banner">
@@ -312,35 +260,46 @@ function VideoAnalysis() {
             </div>
           )}
 
-          {!jobId ? (
-            <VideoUpload
-              onUploadSuccess={handleUploadSuccess}
-              onUploadError={handleUploadError}
-              isProcessing={isProcessing}
-            />
-          ) : (
-            <div className="analysis-dashboard">
-              <div className="dashboard-header">
-                <button onClick={handleReset} className="reset-button">
-                  🔄 새 분석 시작
-                </button>
-                <button onClick={handleRestart} className="restart-button" disabled={!jobId || isProcessing}>
-                  🔁 재분석
-                </button>
+          {/* 분석 대시보드 - 항상 표시 */}
+          <div className="analysis-dashboard">
+            {/* 상단 컨트롤 영역 */}
+            <div className="dashboard-header-simple">
+              <div className="video-selector-wrapper">
+                <h3>🎬 비디오 선택</h3>
+                <SimpleVideoSelector onVideoSelect={handleVideoSelect} autoSelect={true} />
+              </div>
+
+              <div className="status-section">
                 {isProcessing && (
                   <div className="processing-status">
                     <div className="processing-spinner"></div>
                     <span>분석 진행 중...</span>
                   </div>
                 )}
-              </div>
 
-              {videoUrl && (
+                {jobId && !isProcessing && (
+                  <div className="analysis-complete">
+                    <span className="complete-icon">✅</span>
+                    <span>분석 완료</span>
+                  </div>
+                )}
+
+                {jobId && (
+                  <button onClick={handleReset} className="reset-button-simple">
+                    🔄 다른 비디오 선택
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* 비디오 표시 영역 */}
+            {(displayVideoUrl || videoUrl) ? (
+              <>
                 <div className="video-dashboard-container">
                   <div className="video-section">
                     <VideoPlayer
                       jobId={jobId}
-                      videoUrl={videoUrl}
+                      videoUrl={videoUrl || displayVideoUrl}
                       currentFrame={events.length}
                       scores={currentData.scores}
                       rawData={currentData.rawData}
@@ -348,7 +307,6 @@ function VideoAnalysis() {
                       timestamp={currentData.timestamp}
                       currentData={currentData}
                       onPlayPauseChange={handleVideoPlayPause}
-                      onVideoReplay={handleRestart}
                     />
                   </div>
 
@@ -367,17 +325,24 @@ function VideoAnalysis() {
                     />
                   </div>
                 </div>
-              )}
 
-              {events.length > 0 && (
-                <Timeline
-                  events={events}
-                  currentFrame={events.length - 1}
-
-                />
-              )}
-            </div>
-          )}
+                {events.length > 0 && (
+                  <Timeline
+                    events={events}
+                    currentFrame={events.length - 1}
+                  />
+                )}
+              </>
+            ) : (
+              <div className="no-video-placeholder">
+                <div className="placeholder-content">
+                  <span className="placeholder-icon">🎬</span>
+                  <h2>비디오를 선택해주세요</h2>
+                  <p>위에서 비디오를 업로드하거나 저장된 비디오를 선택하세요</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </main>
 
