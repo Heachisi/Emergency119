@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import "./chatbot.css";
 import goblin from "../images/fireGoblinSmile.png";
 
-const SYSTEM_PROMPT = `언어: 모든 답변은 한국어로 간결하게, 역할: 당신은 “119 안전도우미” 챗봇입니다.
+const SYSTEM_PROMPT = `역할: 당신은 “119 안전도우미” 챗봇입니다.
 원칙:
 1) 위급 징후면 즉시 119 권고를 최우선으로 안내.
 2) 의료적 진단/처치는 지시하지 말고, 전문가 상담 권고.
@@ -126,7 +126,7 @@ export default function ChatbotWidget() {
   useEffect(() => {
     if (!genAI) return;
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash",
       systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
         temperature: 0.4,
