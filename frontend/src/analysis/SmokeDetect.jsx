@@ -21,9 +21,8 @@ const SmokeDetect = () => {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
 
-  // 센서 데이터 기반 화재 확률 계산 함수
+  // 센서 데이터 기반 화재 확률 계산 함수 (더 민감하게 조정)
   const calculateFireProbability = (data) => {
-    // 간단한 화재 위험도 계산 로직 (실제 환경에서는 더 정교한 모델 사용)
     const {
       temperature_c = 0,
       humidity_percent = 0,
@@ -34,22 +33,43 @@ const SmokeDetect = () => {
 
     let riskScore = 0;
 
-    // 온도가 높을수록 위험 (25도 이상부터 점수 증가)
-    if (temperature_c > 25) riskScore += Math.min((temperature_c - 25) / 50, 0.3);
+    // 온도 위험도 - 더 민감하게 (20도 이상부터 시작, 최대 0.4)
+    if (temperature_c > 20) {
+      riskScore += Math.min((temperature_c - 20) / 25, 0.4);
+    }
     
-    // 습도가 너무 낮으면 위험 (30% 이하)
-    if (humidity_percent < 30) riskScore += (30 - humidity_percent) / 100;
+    // 습도 위험도 - 더 민감하게 (40% 이하에서 시작, 최대 0.3)
+    if (humidity_percent < 40) {
+      riskScore += Math.min((40 - humidity_percent) / 40, 0.3);
+    }
     
-    // TVOC가 높으면 위험 (1000ppb 이상)
-    if (tvoc_ppb > 1000) riskScore += Math.min((tvoc_ppb - 1000) / 5000, 0.3);
+    // TVOC 위험도 - 더 민감하게 (500ppb 이상부터, 최대 0.4)
+    if (tvoc_ppb > 500) {
+      riskScore += Math.min((tvoc_ppb - 500) / 1500, 0.4);
+    }
     
-    // eCO2가 높으면 위험 (1000ppm 이상)
-    if (eco2_ppm > 1000) riskScore += Math.min((eco2_ppm - 1000) / 3000, 0.2);
+    // eCO2 위험도 - 더 민감하게 (400ppm 이상부터, 최대 0.4)
+    if (eco2_ppm > 400) {
+      riskScore += Math.min((eco2_ppm - 400) / 600, 0.4);
+    }
     
-    // PM2.5가 높으면 위험 (35μg/m³ 이상)
-    if (pm2_5 > 35) riskScore += Math.min((pm2_5 - 35) / 100, 0.2);
+    // PM2.5 위험도 - 더 민감하게 (1.5 이상부터, 최대 0.3)
+    if (pm2_5 > 1.5) {
+      riskScore += Math.min((pm2_5 - 1.5) / 10, 0.3);
+    }
 
-    return Math.min(riskScore, 1.0); // 최대 1.0으로 제한
+    // 복합 위험도 계산 (센서들의 상호작용 고려)
+    const tempHumidityRisk = temperature_c > 25 && humidity_percent < 30 ? 0.2 : 0;
+    const gasRisk = tvoc_ppb > 800 && eco2_ppm > 600 ? 0.15 : 0;
+    const particleRisk = pm2_5 > 3 ? 0.1 : 0;
+
+    riskScore += tempHumidityRisk + gasRisk + particleRisk;
+
+    // 최종 확률 계산 - 시그모이드 함수로 더 자연스러운 곡선
+    const normalizedScore = Math.min(riskScore, 2.0);
+    const probability = 1 / (1 + Math.exp(-3 * (normalizedScore - 0.5))); // 0.8 → 0.5로 더 민감하게
+    
+    return Math.min(Math.max(probability, 0.0), 1.0);
   };
 
   const loadData = async () => {
@@ -111,10 +131,10 @@ const SmokeDetect = () => {
   };
 
   useEffect(() => {
-    // 초기 로드
+    // 초기 로드 + threshold 변경시마다 재계산
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [threshold]);
 
   // 커스텀 툴팁 컴포넌트
   const CustomTooltip = ({ active, payload, label }) => {
@@ -126,24 +146,25 @@ const SmokeDetect = () => {
           border: '1px solid #ccc',
           borderRadius: '4px',
           padding: '8px',
-          fontSize: '12px'
+          fontSize: '12px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
         }}>
           <p style={{ margin: 0, fontWeight: 'bold' }}>{`시간: ${label}`}</p>
           <p style={{ margin: '4px 0', color: '#8884d8' }}>
             {`화재 확률: ${(data.prob_fire * 100).toFixed(1)}%`}
           </p>
           <p style={{ margin: '4px 0', color: '#82ca9d' }}>
-            {`예측: ${data.pred ? '화재 위험' : '정상'}`}
+            {`예측: ${data.pred ? '🔥 화재 위험' : '✅ 정상'}`}
           </p>
           <p style={{ margin: '4px 0', color: '#ffc658' }}>
-            {`실제 알람: ${data.fire_alarm ? '발생' : '없음'}`}
+            {`실제 알람: ${data.fire_alarm ? '🚨 발생' : '⭕ 없음'}`}
           </p>
           <hr style={{ margin: '4px 0' }} />
-          <p style={{ margin: '2px 0' }}>{`온도: ${data.temperature?.toFixed(1) || 'N/A'}°C`}</p>
-          <p style={{ margin: '2px 0' }}>{`습도: ${data.humidity?.toFixed(1) || 'N/A'}%`}</p>
-          <p style={{ margin: '2px 0' }}>{`TVOC: ${data.tvoc?.toFixed(0) || 'N/A'} ppb`}</p>
-          <p style={{ margin: '2px 0' }}>{`eCO2: ${data.eco2?.toFixed(0) || 'N/A'} ppm`}</p>
-          <p style={{ margin: '2px 0' }}>{`PM2.5: ${data.pm25?.toFixed(1) || 'N/A'} μg/m³`}</p>
+          <p style={{ margin: '2px 0' }}>{`🌡️ 온도: ${data.temperature?.toFixed(1) || 'N/A'}°C`}</p>
+          <p style={{ margin: '2px 0' }}>{`💧 습도: ${data.humidity?.toFixed(1) || 'N/A'}%`}</p>
+          <p style={{ margin: '2px 0' }}>{`💨 TVOC: ${data.tvoc?.toFixed(0) || 'N/A'} ppb`}</p>
+          <p style={{ margin: '2px 0' }}>{`🫁 eCO2: ${data.eco2?.toFixed(0) || 'N/A'} ppm`}</p>
+          <p style={{ margin: '2px 0' }}>{`🌫️ PM2.5: ${data.pm25?.toFixed(1) || 'N/A'} μg/m³`}</p>
         </div>
       );
     }
@@ -154,7 +175,7 @@ const SmokeDetect = () => {
     <>
       <Header />
       <div style={{ maxWidth: 1200, margin: '16px auto', padding: '0 16px' }}>
-
+        <h2 style={{ marginBottom: 12 }}>🔥 화재 감지 시스템 대시보드</h2>
 
         {/* 컨트롤 바 */}
         <div style={{ 
@@ -168,7 +189,7 @@ const SmokeDetect = () => {
           borderRadius: '8px'
         }}>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            시작 날짜:
+            📅 시작 날짜:
             <input
               type="datetime-local"
               value={since}
@@ -177,7 +198,7 @@ const SmokeDetect = () => {
             />
           </label>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            데이터 개수:
+            📊 데이터 개수:
             <input
               type="number"
               min={1}
@@ -188,7 +209,7 @@ const SmokeDetect = () => {
             />
           </label>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            임계값:
+            ⚠️ 임계값:
             <input
               type="number" 
               step="0.01" 
@@ -211,9 +232,9 @@ const SmokeDetect = () => {
               cursor: loading ? 'not-allowed' : 'pointer'
             }}
           >
-            {loading ? '로딩 중...' : '새로고침'}
+            {loading ? '🔄 로딩 중...' : '🔄 새로고침'}
           </button>
-          {err && <span style={{ color: 'crimson', fontSize: '14px' }}>오류: {err}</span>}
+          {err && <span style={{ color: 'crimson', fontSize: '14px' }}>❌ 오류: {err}</span>}
         </div>
 
         {/* 통계 정보 */}
@@ -230,7 +251,7 @@ const SmokeDetect = () => {
               borderRadius: '8px',
               minWidth: '120px'
             }}>
-              <div style={{ fontSize: '14px', color: '#666' }}>총 데이터</div>
+              <div style={{ fontSize: '14px', color: '#666' }}>📋 총 데이터</div>
               <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#1976d2' }}>
                 {rows.length.toLocaleString()}
               </div>
@@ -241,7 +262,7 @@ const SmokeDetect = () => {
               borderRadius: '8px',
               minWidth: '120px'
             }}>
-              <div style={{ fontSize: '14px', color: '#666' }}>화재 예측</div>
+              <div style={{ fontSize: '14px', color: '#666' }}>🔥 화재 예측</div>
               <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#f57c00' }}>
                 {rows.filter(r => r.pred === 1).length}
               </div>
@@ -252,7 +273,7 @@ const SmokeDetect = () => {
               borderRadius: '8px',
               minWidth: '120px'
             }}>
-              <div style={{ fontSize: '14px', color: '#666' }}>실제 알람</div>
+              <div style={{ fontSize: '14px', color: '#666' }}>🚨 실제 알람</div>
               <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#d32f2f' }}>
                 {rows.filter(r => r.fire_alarm === 1).length}
               </div>
@@ -263,9 +284,23 @@ const SmokeDetect = () => {
               borderRadius: '8px',
               minWidth: '120px'
             }}>
-              <div style={{ fontSize: '14px', color: '#666' }}>평균 위험도</div>
+              <div style={{ fontSize: '14px', color: '#666' }}>📈 평균 위험도</div>
               <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#388e3c' }}>
                 {(rows.reduce((sum, r) => sum + r.prob_fire, 0) / rows.length * 100).toFixed(1)}%
+              </div>
+            </div>
+            {/* 정확도 통계 추가 */}
+            <div style={{
+              padding: '12px',
+              background: '#f3e5f5',
+              borderRadius: '8px',
+              minWidth: '120px'
+            }}>
+              <div style={{ fontSize: '14px', color: '#666' }}>🎯 예측 정확도</div>
+              <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#7b1fa2' }}>
+                {rows.length > 0 ? 
+                  ((rows.filter(r => r.pred === r.fire_alarm).length / rows.length) * 100).toFixed(1) + '%'
+                  : '0%'}
               </div>
             </div>
           </div>
@@ -298,31 +333,35 @@ const SmokeDetect = () => {
                 type="monotone" 
                 dataKey="prob_fire" 
                 stroke="#8884d8"
+                strokeWidth={2}
                 dot={false} 
-                name="화재 확률" 
+                name="🔥 화재 확률" 
               />
               <Line 
                 yAxisId="right" 
                 type="stepAfter" 
                 dataKey="pred" 
                 stroke="#82ca9d"
+                strokeWidth={2}
                 dot={false} 
-                name="예측 (0/1)" 
+                name="📊 예측 (0/1)" 
               />
               <Line 
                 yAxisId="right" 
                 type="stepAfter" 
                 dataKey="fire_alarm" 
                 stroke="#ffc658"
+                strokeWidth={3}
                 dot={false} 
-                name="실제 알람" 
+                name="🚨 실제 알람" 
               />
               <ReferenceLine 
                 yAxisId="left" 
                 y={threshold} 
                 stroke="#ff7300"
+                strokeWidth={2}
                 strokeDasharray="4 4"
-                label={`임계값: ${threshold}`}
+                label={`⚠️ 임계값: ${threshold}`}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -357,10 +396,11 @@ const SmokeDetect = () => {
         }}>
           <h4 style={{ margin: '0 0 8px 0' }}>📋 시스템 정보</h4>
           <ul style={{ margin: 0, paddingLeft: '20px' }}>
-            <li><strong>화재 확률</strong>: 온도, 습도, TVOC, eCO2, PM2.5 센서 데이터를 기반으로 계산</li>
-            <li><strong>예측</strong>: 화재 확률이 설정한 임계값 이상일 때 1 (위험), 이하일 때 0 (정상)</li>
-            <li><strong>실제 알람</strong>: 데이터베이스에 저장된 실제 화재 알람 발생 여부</li>
-            <li><strong>센서 데이터</strong>: 차트의 점에 마우스를 올리면 해당 시점의 상세 센서 값 확인 가능</li>
+            <li><strong>🔥 화재 확률</strong>: 온도(20°C+), 습도(40%-), TVOC(500ppb+), eCO2(400ppm+), PM2.5(1.5+) 기반 계산</li>
+            <li><strong>📊 예측</strong>: 화재 확률이 설정한 임계값 이상일 때 1 (위험), 이하일 때 0 (정상)</li>
+            <li><strong>🚨 실제 알람</strong>: 데이터베이스에 저장된 실제 화재 알람 발생 여부</li>
+            <li><strong>🎯 예측 정확도</strong>: 모델 예측과 실제 알람의 일치율</li>
+            <li><strong>💡 센서 데이터</strong>: 차트의 점에 마우스를 올리면 해당 시점의 상세 센서 값 확인 가능</li>
           </ul>
         </div>
       </div>
