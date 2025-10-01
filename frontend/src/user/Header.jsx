@@ -4,6 +4,7 @@ import { supabase } from '../supabase';
 const Header = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState(null);
+    const [activeTab, setActiveTab] = useState('analysis');
 
     // 페이지 이동 함수
     const navigateToLogin = () => {
@@ -15,12 +16,24 @@ const Header = () => {
     };
 
     const navigateToAnalysis = () => {
+        setActiveTab('analysis');
         window.location.href = '/analysis';
     };
 
     const navigateToSmokeDetect = () => {
+        setActiveTab('smokeDetect');
         window.location.href = '/smokedetect';
     };
+
+    // 현재 URL에 따라 activeTab 설정
+    useEffect(() => {
+        const path = window.location.pathname;
+        if (path.includes('analysis')) {
+            setActiveTab('analysis');
+        } else if (path.includes('smokedetect')) {
+            setActiveTab('smokeDetect');
+        }
+    }, []);
 
     // 로그인 상태 확인
     useEffect(() => {
@@ -67,112 +80,143 @@ const Header = () => {
     return (
         <>
             {isLoggedIn ? (
-                <header
-            style={{
-                width: "100%",
-                height: "45px",
-                background: "#a11919ff",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                color: "white",
-                padding: "0 10px"
-            }}>
-            <p style={{
-                margin: 0,
-                fontFamily: "'Playfair Display', serif", // 고급스러운 세리프
-                fontSize: "20px",
-                fontWeight: 800,
-                letterSpacing: "1px"
-            }}>Emergency 119</p>
-                <div style={{ display: "flex", alignItems: "center" }}>
-                    {/* 네비게이션 메뉴 */}
-                    <nav style={{ display: "flex", alignItems: "center", marginRight: "20px" }}>
+                <>
+                    {/* 상단 빨간색 헤더 */}
+                    <header
+                        style={{
+                            width: "100%",
+                            height: "50px",
+                            background: "#d32f2f",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            color: "white",
+                            padding: "0 15px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                        }}>
+                        <h1 style={{
+                            margin: 0,
+                            fontSize: "18px",
+                            fontWeight: "700"
+                        }}>Emergency 119</h1>
+                        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                            <span style={{
+                                fontSize: "14px",
+                                fontWeight: "500"
+                            }}>
+                                {user?.user_metadata?.user_id ? `${user.user_metadata.user_id}님 환영합니다!` : '사용자님 환영합니다!'}
+                            </span>
+                            <button
+                                onClick={handleLogout}
+                                style={{
+                                    background: "rgba(255, 255, 255, 0.2)",
+                                    border: "1px solid rgba(255, 255, 255, 0.3)",
+                                    borderRadius: "4px",
+                                    color: "white",
+                                    padding: "6px 16px",
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                    cursor: "pointer"
+                                }}
+                            >
+                                로그아웃
+                            </button>
+                        </div>
+                    </header>
+                    
+                    {/* 탭 네비게이션 */}
+                    <nav style={{
+                        width: "100%",
+                        background: "#e0e0e0",
+                        display: "flex",
+                        borderBottom: "1px solid #bdbdbd"
+                    }}>
                         <button
                             onClick={navigateToAnalysis}
                             style={{
-                                background: "transparent",
+                                flex: 1,
+                                padding: "16px 0",
+                                background: activeTab === 'analysis' ? "white" : "transparent",
                                 border: "none",
-                                color: "white",
-                                fontSize: "14px",
+                                borderRight: "1px solid #bdbdbd",
+                                color: "#424242",
+                                fontSize: "15px",
                                 fontWeight: "500",
                                 cursor: "pointer",
-                                textDecoration: "none",
-                                marginRight: "15px"
+                                transition: "background 0.2s ease"
+                            }}
+                            onMouseEnter={(e) => {
+                                if (activeTab !== 'analysis') {
+                                    e.target.style.background = "#d5d5d5";
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (activeTab !== 'analysis') {
+                                    e.target.style.background = "transparent";
+                                }
                             }}
                         >
                             Analysis
                         </button>
+                        
                         <button
                             onClick={navigateToSmokeDetect}
                             style={{
-                                background: "transparent",
+                                flex: 1,
+                                padding: "16px 0",
+                                background: activeTab === 'smokeDetect' ? "white" : "transparent",
                                 border: "none",
-                                color: "white",
-                                fontSize: "14px",
+                                color: "#424242",
+                                fontSize: "15px",
                                 fontWeight: "500",
                                 cursor: "pointer",
-                                textDecoration: "none",
-                                marginRight: "15px"
+                                transition: "background 0.2s ease"
+                            }}
+                            onMouseEnter={(e) => {
+                                if (activeTab !== 'smokeDetect') {
+                                    e.target.style.background = "#d5d5d5";
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (activeTab !== 'smokeDetect') {
+                                    e.target.style.background = "transparent";
+                                }
                             }}
                         >
                             Smoke Detect
                         </button>
                     </nav>
-                    <span style={{
-                        marginRight: "15px",
-                        fontSize: "14px",
-                        fontWeight: "500"
-                    }}>
-                        {user?.user_metadata?.user_id ? `${user.user_metadata.user_id}님 환영합니다!` : '사용자님 환영합니다!'}
-                    </span>
-                    <button
-                        onClick={handleLogout}
-                        style={{
-                            background: "transparent",
-                            border: "none",
-                            color: "white",
-                            fontSize: "14px",
-                            fontWeight: "500",
-                            cursor: "pointer",
-                            textDecoration: "none"
-                        }}
-                    >
-                        로그아웃
-                    </button>
-                </div>
-                </header>
+                </> 
             ) : (
                 <header
-            style={{
-                width: "100%",
-                height: "45px",
-                background: "#a11919ff",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                color: "white",
-                padding: "0 10px"
-            }}>
-            <p style={{
-                margin: 0,
-                fontFamily: "'Playfair Display', serif", // 고급스러운 세리프
-                fontSize: "20px",
-                fontWeight: 800,
-                letterSpacing: "1px"
-            }}>Emergency 119</p>
-                <div style={{ display: "flex", alignItems: "center" }}>
+                     style={{
+                        width: "100%",
+                        height: "50px",
+                        background: "#d32f2f",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        color: "white",
+                        padding: "0 15px",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                    }}>
+                    <h1 style={{
+                        margin: 0,
+                        fontSize: "18px",
+                        fontWeight: "700"
+                    }}>Emergency 119</h1>
+                <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
                     <button 
                         onClick={navigateToLogin}
                         style={{
-                            background: "transparent",
-                            border: "none",
+                            background: "rgba(255, 255, 255, 0.2)",
+                            border: "1px solid rgba(255, 255, 255, 0.3)",
+                            borderRadius: "4px",
                             color: "white",
-                            marginRight: "20px",
+                            padding: "6px 16px",
                             fontSize: "14px",
                             fontWeight: "500",
-                            cursor: "pointer",
-                            textDecoration: "none"
+                            cursor: "pointer"
                         }}
                     >
                         로그인
@@ -180,13 +224,14 @@ const Header = () => {
                     <button 
                         onClick={navigateToSignup}
                         style={{
-                            background: "transparent",
-                            border: "none",
+                            background: "rgba(255, 255, 255, 0.2)",
+                            border: "1px solid rgba(255, 255, 255, 0.3)",
+                            borderRadius: "4px",
                             color: "white",
+                            padding: "6px 16px",
                             fontSize: "14px",
                             fontWeight: "500",
-                            cursor: "pointer",
-                            textDecoration: "none"
+                            cursor: "pointer"
                         }}
                     >
                         회원가입
@@ -194,7 +239,7 @@ const Header = () => {
                 </div>
                 </header>
             )}
-       </> 
+        </>
     );
 };
 

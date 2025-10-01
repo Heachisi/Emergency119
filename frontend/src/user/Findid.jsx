@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Emergency from '../images/EmergencyRed.png';
 import NineOneOne from '../images/119Orange.png';
 import Extinguisher from '../images/extinguisher.png';
-import Header from '../components/Header';
+import Header from '../user/Header';
 
 const Findid = () => {
   const [email, setEmail] = useState('');

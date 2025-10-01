@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase.js'; // Supabase 클라이언트 import
-import Header from '../components/Header';
+import Header from '../user/Header';
 
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,

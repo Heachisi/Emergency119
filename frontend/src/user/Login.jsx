@@ -4,7 +4,7 @@ import { supabase } from '../supabase.js';
 import Emergency from '../images/EmergencyRed.png';
 import NineOneOne from '../images/119Orange.png';
 import Extinguisher from '../images/extinguisher.png';
-import Header from '../components/Header';
+import Header from '../user/Header';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -71,7 +71,7 @@ const Login = () => {
         const userId = data.user.user_metadata?.user_id || formData.email.split('@')[0];
 
         alert('로그인 성공!');
-        navigate('/');
+        navigate('/analysis');
       }
     } catch (error) {
       console.error('로그인 오류:', error);

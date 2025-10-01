@@ -294,9 +294,6 @@ function VideoAnalysis() {
         <div className="container">
           {/* 네비게이션 버튼 */}
           <div className="navigation-bar">
-            <button onClick={() => navigate('/home')} className="nav-button">
-              🏠 홈으로
-            </button>
             <h1 className="page-title">비디오 분석 시스템</h1>
           </div>
 
