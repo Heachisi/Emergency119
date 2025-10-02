@@ -125,8 +125,8 @@ const StateIndicator = ({ currentState, scores, jobId, timestamp }) => {
       // CALL_119이거나 위험도가 60% 이상인 FIRE_GROWING 상태일 때 래치 ON
       useEffect(() => {
         const shouldShowButton = (
-          (currentState === 'CALL_119' && (fireScore >= 15 || hazardScore >= 45)) ||
-          (currentState === 'FIRE_GROWING' && hazardScore >= 60)
+          (currentState === 'CALL_119' && (fireScore >= 30 || hazardScore >= 35)) ||
+          (currentState === 'FIRE_GROWING' && hazardScore >= 40)
         );
 
         if (shouldShowButton) {

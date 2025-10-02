@@ -709,6 +709,38 @@ select:focus {
   color: rgba(255, 255, 255, 0.5);
 }
 
+/* 버튼 그룹 */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.reanalyze-button {
+  background: linear-gradient(45deg, #f093fb, #f5576c);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+}
+
+.reanalyze-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(240, 147, 251, 0.5);
+  background: linear-gradient(45deg, #e084f0, #f24970);
+}
+
+.reanalyze-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
 /* 반응형 */
 @media (max-width: 768px) {
   .dashboard-header-simple {
@@ -725,7 +757,13 @@ select:focus {
     width: 100%;
   }
 
-  .reset-button-simple {
+  .action-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .reset-button-simple,
+  .reanalyze-button {
     width: 100%;
   }
 }

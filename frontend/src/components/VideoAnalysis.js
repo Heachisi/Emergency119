@@ -149,8 +149,16 @@ function VideoAnalysis() {
   // Supabase에서 비디오 선택 시 - 자동으로 분석 시작
   const handleVideoSelect = async (video) => {
     console.log('비디오 선택:', video);
+    console.log('storage_url:', video.storage_url);
     setSelectedSupabaseVideo(video);
     setError(null);
+
+    // storage_url이 유효한 URL인지 확인
+    if (!video.storage_url || (!video.storage_url.startsWith('http://') && !video.storage_url.startsWith('https://'))) {
+      setError('유효하지 않은 비디오 URL입니다. Signed URL 생성 실패');
+      console.error('Invalid storage_url:', video.storage_url);
+      return;
+    }
 
     // 화면에 Supabase 비디오 URL 표시
     setDisplayVideoUrl(video.storage_url);
@@ -159,23 +167,21 @@ function VideoAnalysis() {
     try {
       setIsProcessing(true);
 
-      // Supabase Storage URL에서 비디오를 가져와 백엔드에 업로드
-      const response = await fetch(video.storage_url);
-      const blob = await response.blob();
-
-      // Blob을 File 객체로 변환
-      const file = new File([blob], video.filename, { type: 'video/mp4' });
-
-      // 백엔드 업로드 API 호출
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const uploadResponse = await fetch('http://localhost:8000/upload', {
+      // 백엔드에 URL 전달 (백엔드가 직접 다운로드)
+      console.log('백엔드로 전송:', video.storage_url);
+      const uploadResponse = await fetch('http://localhost:8000/upload-from-url', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          video_url: video.storage_url
+        }),
       });
 
       if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        console.error('백엔드 응답:', errorText);
         throw new Error(`Upload failed: ${uploadResponse.status}`);
       }
 
@@ -190,6 +196,58 @@ function VideoAnalysis() {
     } catch (err) {
       console.error('비디오 분석 시작 오류:', err);
       setError(`비디오 분석 시작 실패: ${err.message}`);
+      setIsProcessing(false);
+    }
+  };
+
+  // 재분석 버튼 핸들러
+  const handleReanalyze = async () => {
+    if (!jobId) return;
+
+    try {
+      setIsProcessing(true);
+      setError(null);
+      setEvents([]);
+
+      // 기존 SSE 연결 종료
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+
+      console.log('🔄 재분석 요청:', jobId);
+      const response = await fetch(`http://localhost:8000/jobs/${jobId}/restart`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error(`재분석 실패: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ 재분석 시작:', result);
+
+      // 새로운 SSE 연결 시작
+      startSSEConnection(jobId);
+
+      // 비디오를 처음부터 다시 재생
+      const videoElement = document.querySelector('video');
+      if (videoElement) {
+        videoElement.currentTime = 0;
+        videoElement.muted = true;
+        videoElement.play().then(() => {
+          console.log('✅ 비디오 재시작 성공');
+          setTimeout(() => {
+            videoElement.muted = false;
+          }, 500);
+        }).catch(err => {
+          console.error('비디오 재시작 실패:', err);
+        });
+      }
+
+    } catch (err) {
+      console.error('재분석 오류:', err);
+      setError(`재분석 실패: ${err.message}`);
       setIsProcessing(false);
     }
   };
@@ -262,11 +320,11 @@ function VideoAnalysis() {
 
           {/* 분석 대시보드 - 항상 표시 */}
           <div className="analysis-dashboard">
-            {/* 상단 컨트롤 영역 */}
+            {/* 상단 컨트롤 영역 - 항상 표시 */}
             <div className="dashboard-header-simple">
               <div className="video-selector-wrapper">
                 <h3>🎬 비디오 선택</h3>
-                <SimpleVideoSelector onVideoSelect={handleVideoSelect} autoSelect={true} />
+                <SimpleVideoSelector onVideoSelect={handleVideoSelect} autoSelect={false} />
               </div>
 
               <div className="status-section">
@@ -285,15 +343,20 @@ function VideoAnalysis() {
                 )}
 
                 {jobId && (
-                  <button onClick={handleReset} className="reset-button-simple">
-                    🔄 다른 비디오 선택
-                  </button>
+                  <div className="action-buttons">
+                    <button onClick={handleReanalyze} className="reanalyze-button" disabled={isProcessing}>
+                      🔄 재분석
+                    </button>
+                    <button onClick={handleReset} className="reset-button-simple">
+                      📂 다른 비디오 선택
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
 
             {/* 비디오 표시 영역 */}
-            {(displayVideoUrl || videoUrl) ? (
+            {(displayVideoUrl || videoUrl) && (
               <>
                 <div className="video-dashboard-container">
                   <div className="video-section">
@@ -333,14 +396,6 @@ function VideoAnalysis() {
                   />
                 )}
               </>
-            ) : (
-              <div className="no-video-placeholder">
-                <div className="placeholder-content">
-                  <span className="placeholder-icon">🎬</span>
-                  <h2>비디오를 선택해주세요</h2>
-                  <p>위에서 비디오를 업로드하거나 저장된 비디오를 선택하세요</p>
-                </div>
-              </div>
             )}
           </div>
         </div>

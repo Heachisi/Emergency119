@@ -252,6 +252,62 @@ class EmailRequest(BaseModel):
     scores: dict
     timestamp: float = None
 
+class UploadFromUrlRequest(BaseModel):
+    video_url: str
+
+@app.post("/upload-from-url")
+async def upload_from_url(request: UploadFromUrlRequest, background_tasks: BackgroundTasks):
+    """URL에서 동영상 다운로드 → 비동기 분석 시작 → job_id 반환"""
+    import httpx
+
+    if DEBUG_MODE:
+        print(f"📹 URL에서 비디오 다운로드 시작: {request.video_url}")
+
+    job_id = uuid.uuid4().hex[:12]
+    dest = UPLOADS / f"{job_id}.mp4"
+
+    try:
+        # 업로드 디렉토리 확실히 생성
+        UPLOADS.mkdir(parents=True, exist_ok=True)
+
+        # URL에서 비디오 다운로드
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(request.video_url)
+            response.raise_for_status()
+
+            # 파일 저장
+            with open(dest, "wb") as f:
+                f.write(response.content)
+
+        # 파일이 실제로 저장되었는지 확인
+        if not dest.exists() or dest.stat().st_size == 0:
+            raise RuntimeError(f"File save failed: {dest}")
+
+        if not QUIET_MODE:
+            print(f"✅ 다운로드 완료: {job_id} ({dest.stat().st_size} bytes)")
+
+        JOBS[job_id] = {
+            "path": str(dest),
+            "done": False,
+            "err": None,
+            "max_hazard": 0.0,
+            "max_state": "NORMAL",
+            "latched_call119": False,
+            "max_at": 0.0,
+        }
+        EVENT_QUEUES[job_id] = asyncio.Queue(maxsize=100)
+        JOB_FLAGS[job_id] = {"paused": False, "stop": False}
+
+        background_tasks.add_task(process_video_job, job_id, dest)
+        return {"job_id": job_id, "video_url": f"/media/uploads/{dest.name}"}
+
+    except Exception as e:
+        if not QUIET_MODE:
+            print(f"❌ URL 다운로드 실패: {e}")
+        if dest.exists():
+            dest.unlink()  # 실패 시 파일 삭제
+        raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
+
 @app.post("/send-emergency-email")
 async def send_emergency_email(request: EmailRequest):
     """119 호출 버튼 클릭 시 긴급 이메일 발송"""

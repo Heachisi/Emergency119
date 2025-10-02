@@ -15,6 +15,7 @@ import SmokeDetect from './analysis/SmokeDetect';
 
 // 비디오 분석 컴포넌트들
 import VideoAnalysis from './components/VideoAnalysis';
+import VideoUploadPage from './components/VideoUploadPage';
 
 // 디버그 모드 설정
 const DEBUG = false;
@@ -37,7 +38,10 @@ function App() {
 
           {/* 비디오 분석 페이지 */}
           <Route path="/analysis" element={<VideoAnalysis />} />
-          
+
+          {/* 영상 업로드 관리 페이지 */}
+          <Route path="/upload" element={<VideoUploadPage />} />
+
           {/* 404 페이지 */}
           <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />
         </Routes>

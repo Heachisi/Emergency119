@@ -39,9 +39,23 @@ function SimpleVideoSelector({ onVideoSelect, autoSelect = false }) {
         setAutoSelectTriggered(true);
 
         if (onVideoSelect) {
+          // Signed URL 생성
+          const { data: signedData, error: signError } = await supabase.storage
+            .from('emergency-videos')
+            .createSignedUrl(firstVideo.storage_path, 3600);
+
+          if (signError) {
+            console.error('Signed URL 생성 실패:', signError);
+            setError('비디오 URL 생성 실패');
+            return;
+          }
+
           // 약간의 딜레이를 주어 UI가 렌더링된 후 선택
           setTimeout(() => {
-            onVideoSelect(firstVideo);
+            onVideoSelect({
+              ...firstVideo,
+              storage_url: signedData.signedUrl
+            });
           }, 100);
         }
       }
@@ -53,14 +67,28 @@ function SimpleVideoSelector({ onVideoSelect, autoSelect = false }) {
     }
   };
 
-  const handleSelect = (e) => {
+  const handleSelect = async (e) => {
     const videoId = e.target.value;
     setSelectedVideoId(videoId);
 
     if (videoId && onVideoSelect) {
       const selectedVideo = videos.find(v => v.id === videoId);
       if (selectedVideo) {
-        onVideoSelect(selectedVideo);
+        // Signed URL 생성
+        const { data: signedData, error: signError } = await supabase.storage
+          .from('emergency-videos')
+          .createSignedUrl(selectedVideo.storage_path, 3600);
+
+        if (signError) {
+          console.error('Signed URL 생성 실패:', signError);
+          setError('비디오 URL 생성 실패');
+          return;
+        }
+
+        onVideoSelect({
+          ...selectedVideo,
+          storage_url: signedData.signedUrl
+        });
       }
     }
   };
@@ -118,7 +146,7 @@ function SimpleVideoSelector({ onVideoSelect, autoSelect = false }) {
         </p>
       )}
 
-      <style jsx>{`
+      <style>{`
         .simple-video-selector {
           width: 100%;
         }

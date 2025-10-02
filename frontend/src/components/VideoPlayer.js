@@ -82,9 +82,16 @@ const VideoPlayer = ({
       setDuration(video.duration);
       // 메타데이터 로드 후 즉시 자동 재생 시도
       console.log('🎬 비디오 메타데이터 로드 완료, 자동 재생 시도');
-      video.play().catch(error => {
+      // 비디오 음소거 후 자동 재생 (브라우저 정책 우회)
+      video.muted = true;
+      video.play().then(() => {
+        console.log('✅ 자동 재생 성공');
+        // 재생 시작 후 0.5초 뒤 음소거 해제
+        setTimeout(() => {
+          video.muted = false;
+        }, 500);
+      }).catch(error => {
         console.error('자동 재생 실패:', error);
-        console.log('📌 사용자가 수동으로 재생 버튼을 눌러야 합니다');
         setNeedsManualPlay(true);
       });
     };
