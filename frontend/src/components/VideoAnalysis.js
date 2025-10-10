@@ -355,6 +355,42 @@ function VideoAnalysis() {
               </div>
             </div>
 
+            {/* 비디오가 없을 때 업로드 페이지로 가는 버튼 */}
+            {!displayVideoUrl && !videoUrl && !isProcessing && (
+              <div style={{
+                textAlign: 'center',
+                padding: '60px 20px',
+                background: 'rgba(26, 26, 46, 0.6)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '16px',
+                marginTop: '20px'
+              }}>
+                <p style={{ color: '#aaa', marginBottom: '30px' }}>
+                  저장된 비디오가 없거나 새 비디오를 업로드하려면 아래 버튼을 클릭하세요.
+                </p>
+                <button
+                  onClick={() => navigate('/upload')}
+                  style={{
+                    padding: '12px 32px',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    background: 'linear-gradient(135deg, #ff9183ff 0%, #f2324cff 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                    transition: 'transform 0.2s'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  📤 비디오 업로드 페이지로 이동
+                </button>
+              </div>
+            )}
+
             {/* 비디오 표시 영역 */}
             {(displayVideoUrl || videoUrl) && (
               <>

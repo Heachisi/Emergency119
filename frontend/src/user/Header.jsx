@@ -225,8 +225,7 @@ const Header = () => {
                                     e.target.style.color = "#616161";
                                 }
                             }}
-                        >
-                            건물 안전 상태
+                        > 실시간 센서 모니터링
                         </button>
                     </nav>
                 </>

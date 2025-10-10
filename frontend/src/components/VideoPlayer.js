@@ -239,10 +239,23 @@ const VideoPlayer = ({
       const emaScore = b.cls === 0 ? data.scores.fire : data.scores.smoke;
       const label = `${b.cls===0?'Fire':'Smoke'} ${emaScore.toFixed(2)}`;
       const tw = ctx.measureText(label).width + 8;
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.fillRect(x1, y1-16, tw, 14);
+
+      // 라벨 위치 결정: 박스가 화면 상단에 가까우면 박스 안쪽에 표시
+      const labelHeight = 14;
+      const topMargin = 20; // 상단 여백
+      let labelY = y1 - 16; // 기본: 박스 위
+      let textY = y1 - 4;
+
+      // 박스가 화면 상단 근처에 있으면 박스 안쪽으로
+      if (y1 < topMargin + labelHeight) {
+        labelY = y1 + 2; // 박스 안쪽 상단
+        textY = y1 + 14;
+      }
+
+      ctx.fillStyle = 'rgba(0,0,0,0.8)';
+      ctx.fillRect(x1, labelY, tw, labelHeight);
       ctx.fillStyle = '#fff';
-      ctx.fillText(label, x1+4, y1-4);
+      ctx.fillText(label, x1+4, textY);
 
       console.log(`✅ 박스 ${index} 그리기 완료: ${label}`);
     });
@@ -346,11 +359,30 @@ const VideoPlayer = ({
     }
   };
 
-  const handleSpeedChange = (e) => {
+  const handleSpeedChange = async (e) => {
     const newRate = parseFloat(e.target.value);
     setPlaybackRate(newRate);
     if (videoRef.current) {
       videoRef.current.playbackRate = newRate;
+    }
+
+    // 백엔드에 속도 변경 알림
+    if (jobId) {
+      try {
+        await fetch(`http://localhost:8000/jobs/${jobId}/control`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            cmd: 'speed',
+            playback_rate: newRate
+          })
+        });
+        console.log(`✅ 백엔드 속도 변경: ${newRate}x`);
+      } catch (error) {
+        console.error('속도 변경 API 오류:', error);
+      }
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import './VideoUploadPage.css';
+import Header from '../user/Header';
 
 const VideoUploadPage = () => {
   const [videos, setVideos] = useState([]);
@@ -322,89 +323,92 @@ const VideoUploadPage = () => {
   }
 
   return (
-    <div className="upload-page">
-      <div className="upload-container">
-        <h1>영상 관리</h1>
+    <>
+     <Header/>
+      <div className="upload-page">
+        <div className="upload-container">
+          <h1>영상 관리</h1>
 
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
+          {error && <div className="error-message">{error}</div>}
+          {success && <div className="success-message">{success}</div>}
 
-        <div className="upload-section">
-          <h2>영상 업로드</h2>
-          <div className="upload-area">
-            <label htmlFor="video-input" className="upload-button">
-              {uploading ? '업로드 중...' : '📹 영상 선택'}
-            </label>
-            <input
-              id="video-input"
-              type="file"
-              accept="video/*"
-              onChange={handleFileUpload}
-              disabled={uploading}
-              style={{ display: 'none' }}
-            />
-            <p className="upload-info">
-              지원 형식: MP4, AVI, MOV, WMV 등 | 최대 크기: 500MB
-            </p>
-          </div>
-        </div>
-
-        <div className="videos-section">
-          <div className="section-header">
-            <h2>내 영상 목록</h2>
-            <button onClick={loadVideos} disabled={loading} className="refresh-button">
-              🔄 새로고침
-            </button>
-          </div>
-
-          {loading ? (
-            <div className="loading">영상 목록을 불러오는 중...</div>
-          ) : videos.length === 0 ? (
-            <div className="no-videos">업로드된 영상이 없습니다.</div>
-          ) : (
-            <div className="videos-grid">
-              {videos.map((video) => (
-                <div key={video.id} className="video-card">
-                  <div className="video-preview">
-                    {videoUrls[video.id] ? (
-                      <video
-                        src={videoUrls[video.id]}
-                        controls
-                        preload="metadata"
-                      />
-                    ) : (
-                      <div className="loading">URL 생성 중...</div>
-                    )}
-                  </div>
-                  <div className="video-info">
-                    <h3>{video.filename}</h3>
-                    <p>크기: {formatFileSize(video.file_size || 0)}</p>
-                    <p>업로드: {formatDate(video.uploaded_at)}</p>
-                  </div>
-                  <div className="video-actions">
-                    <a
-                      href={videoUrls[video.id] || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="view-button"
-                      onClick={(e) => !videoUrls[video.id] && e.preventDefault()}
-                    >
-                      보기
-                    </a>
-                    <button
-                      onClick={() => handleDelete(video.id, video.storage_path)}
-                      className="delete-button"
-                    >
-                      삭제
-                    </button>
-                  </div>
-                </div>
-              ))}
+          <div className="upload-section">
+            <h2>영상 업로드</h2>
+            <div className="upload-area">
+              <label htmlFor="video-input" className="upload-button">
+                {uploading ? '업로드 중...' : '📹 영상 선택'}
+              </label>
+              <input
+                id="video-input"
+                type="file"
+                accept="video/*"
+                onChange={handleFileUpload}
+                disabled={uploading}
+                style={{ display: 'none' }}
+              />
+              <p className="upload-info">
+                지원 형식: MP4, AVI, MOV, WMV 등 | 최대 크기: 500MB
+              </p>
             </div>
-          )}
+          </div>
+
+          <div className="videos-section">
+            <div className="section-header">
+              <h2>내 영상 목록</h2>
+              <button onClick={loadVideos} disabled={loading} className="refresh-button">
+                재조회
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="loading">영상 목록을 불러오는 중...</div>
+            ) : videos.length === 0 ? (
+              <div className="no-videos">업로드된 영상이 없습니다.</div>
+            ) : (
+              <div className="videos-grid">
+                {videos.map((video) => (
+                  <div key={video.id} className="video-card">
+                    <div className="video-preview">
+                      {videoUrls[video.id] ? (
+                        <video
+                          src={videoUrls[video.id]}
+                          controls
+                          preload="metadata"
+                        />
+                      ) : (
+                        <div className="loading">URL 생성 중...</div>
+                      )}
+                    </div>
+                    <div className="video-info">
+                      <h3>{video.filename}</h3>
+                      <p>크기: {formatFileSize(video.file_size || 0)}</p>
+                      <p>업로드: {formatDate(video.uploaded_at)}</p>
+                    </div>
+                    <div className="video-actions">
+                      <a
+                        href={videoUrls[video.id] || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="view-button"
+                        onClick={(e) => !videoUrls[video.id] && e.preventDefault()}
+                      >
+                        보기
+                      </a>
+                      <button
+                        onClick={() => handleDelete(video.id, video.storage_path)}
+                        className="delete-button"
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

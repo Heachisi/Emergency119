@@ -10,6 +10,7 @@ const SmokeDetect = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   // 센서 데이터 기반 화재 확률 계산 함수
   const calculateFireProbability = (data) => {
@@ -123,6 +124,15 @@ const SmokeDetect = () => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threshold]);
+
+  // 실시간 시간 업데이트
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -284,28 +294,28 @@ const SmokeDetect = () => {
           {rows.length > 0 && (
             <div style={{ display: 'flex', gap: '30px' }}>
               <StatCard 
-                icon="📋" 
-                label="총 데이터" 
-                value={rows.length.toLocaleString()}
-                gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                icon="📈" 
+                label="실시간 화재 위험도" 
+                value={`${(rows.reduce((sum, r) => sum + r.prob_fire, 0) / rows.length * 100).toFixed(1)}%`}
+                gradient="linear-gradient(135deg, #66c963ff 0%, #d0ebcfff 100%)"
               />
               <StatCard 
                 icon="🔥" 
-                label="화재 예측" 
+                label="예측된 화재" 
                 value={rows.filter(r => r.pred === 1).length}
                 gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
               />
               <StatCard 
                 icon="🚨" 
-                label="실제 알람" 
+                label="실제 경보 발생" 
                 value={rows.filter(r => r.fire_alarm === 1).length}
                 gradient="linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
               />
               <StatCard 
-                icon="📈" 
-                label="평균 위험도" 
-                value={`${(rows.reduce((sum, r) => sum + r.prob_fire, 0) / rows.length * 100).toFixed(1)}%`}
-                gradient="linear-gradient(135deg, #66c963ff 0%, #d0ebcfff 100%)"
+                icon="📋" 
+                label="총 데이터" 
+                value={rows.length.toLocaleString()}
+                gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
               />
             </div>
           )}
@@ -358,29 +368,11 @@ const SmokeDetect = () => {
                     yAxisId="left" 
                     type="monotone" 
                     dataKey="prob_fire" 
-                    stroke="#8884d8"
+                    stroke="#ff7811ff"
                     strokeWidth={3}
                     dot={false}
-                    name="🔥 화재 확률"
+                    name="🔥 실시간 화재 발생 확률"
                     filter="drop-shadow(0 0 8px rgba(136, 132, 216, 0.6))"
-                  />
-                  <Line 
-                    yAxisId="right" 
-                    type="stepAfter" 
-                    dataKey="pred" 
-                    stroke="#82ca9d"
-                    strokeWidth={2}
-                    dot={false}
-                    name="📊 예측 (0/1)"
-                  />
-                  <Line 
-                    yAxisId="right" 
-                    type="stepAfter" 
-                    dataKey="fire_alarm" 
-                    stroke="#ffc658"
-                    strokeWidth={3}
-                    dot={false}
-                    name="🚨 실제 알람"
                   />
                   <ReferenceLine 
                     yAxisId="left" 
@@ -408,6 +400,15 @@ const SmokeDetect = () => {
               차트의 점에 마우스를 올리면 상세 센서 데이터를 볼 수 있습니다.
             </div>
           </div>
+
+          
+
+          {/* 실시간 상태 표시 */}
+          <RealTimeStatusPanel
+            rows={rows}
+            threshold={threshold}
+            currentTime={currentTime}
+          />
 
           {/* 시스템 정보 */}
           <div style={{
@@ -451,7 +452,218 @@ const StatCard = ({ icon, label, value, gradient }) => (
     <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', marginBottom: '4px' }}>{label}</div>
     <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'white' }}>{value}</div>
   </div>
-  
 );
+
+// 실시간 상태 표시 패널 컴포넌트
+const RealTimeStatusPanel = ({ rows, threshold, currentTime }) => {
+  // 가장 최근 데이터로 현재 상태 계산
+  const latestData = rows.length > 0 ? rows[rows.length - 1] : null;
+  const currentRisk = latestData ? latestData.prob_fire : 0;
+
+  // 상태 결정 (안전/주의/위험)
+  const getStatus = () => {
+    if (currentRisk < threshold * 0.5) {
+      return {
+        level: 'safe',
+        text: '안전',
+        color: '#4ade80',
+        bgColor: 'rgba(74, 222, 128, 0.1)',
+        borderColor: 'rgba(74, 222, 128, 0.3)',
+        icon: '✅',
+        animation: 'none'
+      };
+    } else if (currentRisk < threshold) {
+      return {
+        level: 'warning',
+        text: '주의',
+        color: '#fb923c',
+        bgColor: 'rgba(251, 146, 60, 0.1)',
+        borderColor: 'rgba(251, 146, 60, 0.3)',
+        icon: '⚠️',
+        animation: 'none'
+      };
+    } else {
+      return {
+        level: 'danger',
+        text: '위험',
+        color: '#ef4444',
+        bgColor: 'rgba(239, 68, 68, 0.1)',
+        borderColor: 'rgba(239, 68, 68, 0.3)',
+        icon: '🚨',
+        animation: 'blink 1s infinite'
+      };
+    }
+  };
+
+  const status = getStatus();
+
+  return (
+    <>
+      <style>
+        {`
+          @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.4; }
+          }
+        `}
+      </style>
+      <div style={{
+        marginTop: '24px',
+        background: 'rgba(26, 26, 46, 0.6)',
+        backdropFilter: 'blur(10px)',
+        border: `2px solid ${status.borderColor}`,
+        borderRadius: '16px',
+        padding: '24px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+      }}>
+        <h4 style={{ margin: '0 0 20px 0', color: '#8ab4f8', fontSize: '18px' }}>
+          📡 실시간 화재 위험 모니터링
+        </h4>
+
+        {/* 메인 상태 표시 */}
+        <div style={{
+          background: status.bgColor,
+          border: `2px solid ${status.borderColor}`,
+          borderRadius: '12px',
+          padding: '20px',
+          textAlign: 'center',
+          marginBottom: '20px',
+          animation: status.animation
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '8px' }}>{status.icon}</div>
+          <div style={{
+            fontSize: '32px',
+            fontWeight: 'bold',
+            color: status.color,
+            marginBottom: '8px'
+          }}>
+            {status.text}
+          </div>
+          <div style={{
+            fontSize: '24px',
+            color: status.color,
+            fontWeight: '600'
+          }}>
+            위험도: {(currentRisk * 100).toFixed(1)}%
+          </div>
+        </div>
+
+        {/* 상세 정보 */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '16px',
+          marginBottom: '16px'
+        }}>
+          {/* 업데이트 시간 */}
+          <div style={{
+            background: 'rgba(139, 180, 248, 0.1)',
+            border: '1px solid rgba(139, 180, 248, 0.2)',
+            borderRadius: '8px',
+            padding: '12px'
+          }}>
+            <div style={{ fontSize: '12px', color: '#8ab4f8', marginBottom: '4px' }}>
+              🕐 업데이트 시간
+            </div>
+            <div style={{ fontSize: '16px', color: '#fff', fontWeight: '600' }}>
+              {currentTime.toLocaleTimeString('ko-KR')}
+            </div>
+          </div>
+
+          {/* 위치 정보 */}
+          <div style={{
+            background: 'rgba(139, 180, 248, 0.1)',
+            border: '1px solid rgba(139, 180, 248, 0.2)',
+            borderRadius: '8px',
+            padding: '12px'
+          }}>
+            <div style={{ fontSize: '12px', color: '#8ab4f8', marginBottom: '4px' }}>
+              📍 모니터링 위치
+            </div>
+            <div style={{ fontSize: '16px', color: '#fff', fontWeight: '600' }}>
+              센서 위치 A동 3층
+            </div>
+          </div>
+        </div>
+
+        {/* 센서 상세 데이터 */}
+        {latestData && (
+          <div style={{
+            background: 'rgba(0, 0, 0, 0.2)',
+            borderRadius: '8px',
+            padding: '16px'
+          }}>
+            <div style={{ fontSize: '14px', color: '#8ab4f8', marginBottom: '12px', fontWeight: '600' }}>
+              📊 센서 데이터
+            </div>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '12px',
+              fontSize: '13px',
+              color: '#aaa'
+            }}>
+              <div>
+                <span style={{ color: '#8ab4f8' }}>🌡️ 온도:</span>
+                <br />
+                <span style={{ color: '#fff', fontSize: '16px' }}>
+                  {latestData.temperature?.toFixed(1)}°C
+                </span>
+              </div>
+              <div>
+                <span style={{ color: '#8ab4f8' }}>💧 습도:</span>
+                <br />
+                <span style={{ color: '#fff', fontSize: '16px' }}>
+                  {latestData.humidity?.toFixed(1)}%
+                </span>
+              </div>
+              <div>
+                <span style={{ color: '#8ab4f8' }}>💨 TVOC:</span>
+                <br />
+                <span style={{ color: '#fff', fontSize: '16px' }}>
+                  {latestData.tvoc?.toFixed(0)} ppb
+                </span>
+              </div>
+              <div>
+                <span style={{ color: '#8ab4f8' }}>🫁 eCO2:</span>
+                <br />
+                <span style={{ color: '#fff', fontSize: '16px' }}>
+                  {latestData.eco2?.toFixed(0)} ppm
+                </span>
+              </div>
+              <div>
+                <span style={{ color: '#8ab4f8' }}>🌫️ PM2.5:</span>
+                <br />
+                <span style={{ color: '#fff', fontSize: '16px' }}>
+                  {latestData.pm25?.toFixed(1)} μg/m³
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 상태 설명 */}
+        <div style={{
+          marginTop: '16px',
+          padding: '12px',
+          background: 'rgba(139, 180, 248, 0.05)',
+          borderRadius: '8px',
+          fontSize: '12px',
+          color: '#aaa',
+          textAlign: 'center'
+        }}>
+          <div style={{ marginBottom: '8px', fontWeight: '600', color: '#8ab4f8' }}>
+            상태 기준
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+            <span style={{ color: '#4ade80' }}>✅ 안전: {(threshold * 0.5 * 100).toFixed(0)}% 미만</span>
+            <span style={{ color: '#fb923c' }}>⚠️ 주의: {(threshold * 0.5 * 100).toFixed(0)}% ~ {(threshold * 100).toFixed(0)}%</span>
+            <span style={{ color: '#ef4444' }}>🚨 위험: {(threshold * 100).toFixed(0)}% 이상</span>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
 
 export default SmokeDetect;

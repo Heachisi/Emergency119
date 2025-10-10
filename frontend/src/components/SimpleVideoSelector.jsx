@@ -142,7 +142,7 @@ function SimpleVideoSelector({ onVideoSelect, autoSelect = false }) {
 
       {videos.length === 0 && (
         <p className="no-videos-message">
-          저장된 비디오가 없습니다. Supabase에 비디오를 먼저 업로드해주세요.
+          저장된 비디오가 없습니다. 비디오를 먼저 업로드해주세요.
         </p>
       )}
 

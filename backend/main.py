@@ -189,7 +189,7 @@ async def upload_video(file: UploadFile, background_tasks: BackgroundTasks):
             "max_at": 0.0,  # 최대치가 찍힌 영상 내 시간(s)
             }
         EVENT_QUEUES[job_id] = asyncio.Queue(maxsize=100)
-        JOB_FLAGS[job_id] = {"paused": False, "stop": False}
+        JOB_FLAGS[job_id] = {"paused": False, "stop": False, "playback_rate": 1.0}
 
         background_tasks.add_task(process_video_job, job_id, dest)
         return {"job_id": job_id, "video_url": f"/media/uploads/{dest.name}"}
@@ -225,11 +225,12 @@ async def media(name: str):
     return FileResponse(str(p), media_type="video/mp4")
 
 class Ctrl(BaseModel):
-    cmd: str  # 'pause' | 'resume' | 'stop'
+    cmd: str  # 'pause' | 'resume' | 'stop' | 'speed'
+    playback_rate: float = 1.0  # 재생 속도 (0.5, 1.0, 1.5, 2.0)
 
 @app.post("/jobs/{job_id}/control")
 async def control(job_id: str, c: Ctrl):
-    """분석 제어: 일시정지/재개/중지"""
+    """분석 제어: 일시정지/재개/중지/속도조절"""
     if job_id not in JOB_FLAGS:
         raise HTTPException(404, "unknown job_id")
     if c.cmd == "pause":
@@ -238,8 +239,11 @@ async def control(job_id: str, c: Ctrl):
         JOB_FLAGS[job_id]["paused"] = False
     elif c.cmd == "stop":
         JOB_FLAGS[job_id]["stop"] = True
+    elif c.cmd == "speed":
+        JOB_FLAGS[job_id]["playback_rate"] = c.playback_rate
+        print(f"🎬 재생 속도 변경: {job_id} -> {c.playback_rate}x")
     else:
-        raise HTTPException(400, "cmd must be pause|resume|stop")
+        raise HTTPException(400, "cmd must be pause|resume|stop|speed")
     return {"ok": True, "flags": JOB_FLAGS[job_id]}
 
 @app.get("/test")
@@ -296,7 +300,7 @@ async def upload_from_url(request: UploadFromUrlRequest, background_tasks: Backg
             "max_at": 0.0,
         }
         EVENT_QUEUES[job_id] = asyncio.Queue(maxsize=100)
-        JOB_FLAGS[job_id] = {"paused": False, "stop": False}
+        JOB_FLAGS[job_id] = {"paused": False, "stop": False, "playback_rate": 1.0}
 
         background_tasks.add_task(process_video_job, job_id, dest)
         return {"job_id": job_id, "video_url": f"/media/uploads/{dest.name}"}
@@ -585,8 +589,9 @@ async def process_video_job(job_id: str, path: Path):
 
             await q.put(event_data)
 
-            # 재생 속도 맞추기
-            due = start_wall + t_video
+            # 재생 속도 맞추기 (playback_rate 적용)
+            playback_rate = flags.get("playback_rate", 1.0)
+            due = start_wall + (t_video / playback_rate)
             now = time.monotonic()
             if due - now > 0:
                 await asyncio.sleep(due - now)
