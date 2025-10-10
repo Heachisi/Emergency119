@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../user/Header';
+import { supabase } from '../supabase.js';
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, ReferenceLine, Legend } from 'recharts';
 
 const SmokeDetect = () => {
@@ -8,25 +9,116 @@ const SmokeDetect = () => {
   const [threshold, setThreshold] = useState(0.5);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
 
-  // 예시 데이터 (실제로는 Supabase에서 가져옴)
+  // 센서 데이터 기반 화재 확률 계산 함수
+  const calculateFireProbability = (data) => {
+    const {
+      temperature_c = 0,
+      humidity_percent = 0,
+      tvoc_ppb = 0,
+      eco2_ppm = 0,
+      pm2_5 = 0
+    } = data;
+
+    let riskScore = 0;
+
+    // 온도 위험도
+    if (temperature_c > 20) {
+      riskScore += Math.min((temperature_c - 20) / 25, 0.4);
+    }
+
+    // 습도 위험도
+    if (humidity_percent < 40) {
+      riskScore += Math.min((40 - humidity_percent) / 40, 0.3);
+    }
+
+    // TVOC 위험도
+    if (tvoc_ppb > 500) {
+      riskScore += Math.min((tvoc_ppb - 500) / 1500, 0.4);
+    }
+
+    // eCO2 위험도
+    if (eco2_ppm > 400) {
+      riskScore += Math.min((eco2_ppm - 400) / 600, 0.4);
+    }
+
+    // PM2.5 위험도
+    if (pm2_5 > 1.5) {
+      riskScore += Math.min((pm2_5 - 1.5) / 10, 0.3);
+    }
+
+    // 복합 위험도 계산
+    const tempHumidityRisk = temperature_c > 25 && humidity_percent < 30 ? 0.2 : 0;
+    const gasRisk = tvoc_ppb > 800 && eco2_ppm > 600 ? 0.15 : 0;
+    const particleRisk = pm2_5 > 3 ? 0.1 : 0;
+
+    riskScore += tempHumidityRisk + gasRisk + particleRisk;
+
+    // 최종 확률 계산
+    const normalizedScore = Math.min(riskScore, 2.0);
+    const probability = 1 / (1 + Math.exp(-3 * (normalizedScore - 0.5)));
+
+    return Math.min(Math.max(probability, 0.0), 1.0);
+  };
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setErr('');
+
+      let query = supabase
+        .from('smoke_sensor_data')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (since) {
+        query = query.gte('created_at', since);
+      }
+
+      if (limit) {
+        query = query.limit(limit);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      const shaped = data.map(d => {
+        const prob_fire = calculateFireProbability(d);
+        const pred = prob_fire >= threshold ? 1 : 0;
+
+        return {
+          t: new Date(d.created_at).toLocaleString('ko-KR', {
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          prob_fire: Number(prob_fire.toFixed(3)),
+          pred: Number(pred),
+          fire_alarm: d.fire_alarm ? 1 : 0,
+          temperature: d.temperature_c,
+          humidity: d.humidity_percent,
+          tvoc: d.tvoc_ppb,
+          eco2: d.eco2_ppm,
+          pm25: d.pm2_5,
+          original: d
+        };
+      });
+
+      setRows(shaped);
+    } catch (e) {
+      console.error('Error loading data:', e);
+      setErr(e.message || String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const mockData = Array.from({ length: 50 }, (_, i) => {
-      const baseTime = new Date(Date.now() - (50 - i) * 60000);
-      const prob = Math.random() * 0.8;
-      return {
-        t: baseTime.toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
-        prob_fire: Number(prob.toFixed(3)),
-        pred: prob >= threshold ? 1 : 0,
-        fire_alarm: Math.random() > 0.9 ? 1 : 0,
-        temperature: 20 + Math.random() * 15,
-        humidity: 30 + Math.random() * 40,
-        tvoc: 400 + Math.random() * 800,
-        eco2: 400 + Math.random() * 400,
-        pm25: 1 + Math.random() * 5
-      };
-    });
-    setRows(mockData);
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threshold]);
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -149,25 +241,27 @@ const SmokeDetect = () => {
             </label>
 
             <button
-              onClick={() => setLoading(!loading)}
+              onClick={loadData}
+              disabled={loading}
               style={{
                 width: '100%',
                 padding: '12px',
                 borderRadius: '8px',
                 border: 'none',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: loading ? '#555' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 color: 'white',
                 fontSize: '14px',
                 fontWeight: 'bold',
-                cursor: 'pointer',
+                cursor: loading ? 'not-allowed' : 'pointer',
                 transition: 'transform 0.2s',
                 boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
               }}
-              onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseOver={e => !loading && (e.currentTarget.style.transform = 'translateY(-2px)')}
               onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
             >
               {loading ? '🔄 로딩 중...' : '🔄 새로고침'}
             </button>
+            {err && <div style={{ marginTop: '12px', color: '#ff6b6b', fontSize: '12px' }}>❌ {err}</div>}
           </div>
 
         </div>

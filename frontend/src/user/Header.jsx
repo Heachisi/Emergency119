@@ -81,158 +81,243 @@ const Header = () => {
         <>
             {isLoggedIn ? (
                 <>
-                    {/* 상단 빨간색 헤더 */}
+                    {/* 상단 헤더 - 그라디언트 적용 */}
                     <header
                         style={{
                             width: "100%",
-                            height: "50px",
-                            background: "#d32f2f",
+                            height: "65px",
+                            background: "linear-gradient(135deg, #c62828 0%, #e53935 50%, #d32f2f 100%)",
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
                             color: "white",
                             padding: "0 15px",
-                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                            boxShadow: "0 4px 12px rgba(211, 47, 47, 0.3)",
+                            position: "relative",
+                            overflow: "hidden"
                         }}>
+                        {/* 배경 장식 요소 */}
+                        <div style={{
+                            position: "absolute",
+                            top: "-50%",
+                            right: "-5%",
+                            width: "400px",
+                            height: "400px",
+                            background: "radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)",
+                            borderRadius: "50%",
+                            pointerEvents: "none"
+                        }} />
+
                         <h1 style={{
                             margin: 0,
-                            fontSize: "18px",
-                            fontWeight: "700"
+                            fontSize: "22px",
+                            fontWeight: "700",
+                            letterSpacing: "0.5px",
+                            textShadow: "2px 2px 4px rgba(0,0,0,0.2)",
+                            position: "relative",
+                            zIndex: 1
                         }}>Emergency 119</h1>
-                        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: "24px", position: "relative", zIndex: 1 }}>
                             <span style={{
                                 fontSize: "14px",
-                                fontWeight: "500"
+                                fontWeight: "500",
+                                background: "rgba(255, 255, 255, 0.15)",
+                                padding: "8px 16px",
+                                borderRadius: "20px",
+                                backdropFilter: "blur(10px)",
+                                border: "1px solid rgba(255, 255, 255, 0.2)"
                             }}>
                                 {user?.user_metadata?.user_id ? `${user.user_metadata.user_id}님 환영합니다!` : '사용자님 환영합니다!'}
                             </span>
                             <button
                                 onClick={handleLogout}
                                 style={{
-                                    background: "rgba(255, 255, 255, 0.2)",
-                                    border: "1px solid rgba(255, 255, 255, 0.3)",
-                                    borderRadius: "4px",
-                                    color: "white",
-                                    padding: "6px 16px",
+                                    background: "white",
+                                    border: "none",
+                                    borderRadius: "8px",
+                                    color: "#d32f2f",
+                                    padding: "10px 24px",
                                     fontSize: "14px",
-                                    fontWeight: "500",
-                                    cursor: "pointer"
+                                    fontWeight: "600",
+                                    cursor: "pointer",
+                                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                                    transition: "all 0.3s ease",
+                                    transform: "translateY(0)"
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.transform = "translateY(-2px)";
+                                    e.target.style.boxShadow = "0 4px 12px rgba(0,0,0,0.25)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.transform = "translateY(0)";
+                                    e.target.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
                                 }}
                             >
                                 로그아웃
                             </button>
                         </div>
                     </header>
-                    
-                    {/* 탭 네비게이션 */}
+
+                    {/* 탭 네비게이션 - 모던한 디자인 */}
                     <nav style={{
                         width: "100%",
-                        background: "#e0e0e0",
+                        background: "linear-gradient(to bottom, #ffffffff 0%, #f5f5f5 100%)",
                         display: "flex",
-                        borderBottom: "1px solid #bdbdbd",
-                        marginBottom:"30px"
+                        borderBottom: "2px solid #e0e0e0",
+                        marginBottom: "30px",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
                     }}>
                         <button
                             onClick={navigateToAnalysis}
                             style={{
                                 flex: 1,
-                                padding: "16px 0",
-                                background: activeTab === 'analysis' ? "white" : "transparent",
+                                padding: "18px 0",
                                 border: "none",
-                                borderRight: "1px solid #bdbdbd",
-                                color: "#424242",
+                                borderRight: "1px solid #e0e0e0",
+                                borderBottom: activeTab === 'analysis' ? "3px solid #d32f2f" : "3px solid transparent",
+                                color: activeTab === 'analysis' ? "#d32f2f" : "#616161",
                                 fontSize: "15px",
-                                fontWeight: "500",
+                                fontWeight: activeTab === 'analysis' ? "600" : "500",
                                 cursor: "pointer",
-                                transition: "background 0.2s ease"
+                                transition: "all 0.3s ease",
+                                position: "relative"
                             }}
                             onMouseEnter={(e) => {
                                 if (activeTab !== 'analysis') {
-                                    e.target.style.background = "#d5d5d5";
+                                    e.target.style.background = "linear-gradient(to bottom, #fafafa 0%, #f0f0f0 100%)";
+                                    e.target.style.color = "#424242";
                                 }
                             }}
                             onMouseLeave={(e) => {
                                 if (activeTab !== 'analysis') {
                                     e.target.style.background = "transparent";
+                                    e.target.style.color = "#616161";
                                 }
                             }}
                         >
                             비디오 분석 시스템
                         </button>
-                        
+
                         <button
                             onClick={navigateToSmokeDetect}
                             style={{
                                 flex: 1,
-                                padding: "16px 0",
-                                background: activeTab === 'smokeDetect' ? "white" : "transparent",
+                                padding: "18px 0",
                                 border: "none",
-                                color: "#424242",
+                                borderBottom: activeTab === 'smokeDetect' ? "3px solid #d32f2f" : "3px solid transparent",
+                                color: activeTab === 'smokeDetect' ? "#d32f2f" : "#616161",
                                 fontSize: "15px",
-                                fontWeight: "500",
+                                fontWeight: activeTab === 'smokeDetect' ? "600" : "500",
                                 cursor: "pointer",
-                                transition: "background 0.2s ease"
+                                transition: "all 0.3s ease",
+                                position: "relative"
                             }}
                             onMouseEnter={(e) => {
                                 if (activeTab !== 'smokeDetect') {
-                                    e.target.style.background = "#d5d5d5";
+                                    e.target.style.background = "linear-gradient(to bottom, #fafafa 0%, #f0f0f0 100%)";
+                                    e.target.style.color = "#424242";
                                 }
                             }}
                             onMouseLeave={(e) => {
                                 if (activeTab !== 'smokeDetect') {
                                     e.target.style.background = "transparent";
+                                    e.target.style.color = "#616161";
                                 }
                             }}
                         >
                             건물 안전 상태
                         </button>
                     </nav>
-                </> 
+                </>
             ) : (
                 <header
                      style={{
                         width: "100%",
-                        height: "50px",
-                        background: "#d32f2f",
+                        height: "65px",
+                        background: "linear-gradient(135deg, #c62828 0%, #e53935 50%, #d32f2f 100%)",
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
                         color: "white",
-                        padding: "0 15px",
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                        padding: "0 30px",
+                        boxShadow: "0 4px 12px rgba(211, 47, 47, 0.3)",
+                        position: "relative",
+                        overflow: "hidden"
                     }}>
+                    {/* 배경 장식 요소 */}
+                    <div style={{
+                        position: "absolute",
+                        top: "-50%",
+                        right: "-5%",
+                        width: "400px",
+                        height: "400px",
+                        background: "radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)",
+                        borderRadius: "50%",
+                        pointerEvents: "none"
+                    }} />
+
                     <h1 style={{
                         margin: 0,
-                        fontSize: "18px",
-                        fontWeight: "700"
+                        fontSize: "22px",
+                        fontWeight: "700",
+                        letterSpacing: "0.5px",
+                        textShadow: "2px 2px 4px rgba(0,0,0,0.2)",
+                        position: "relative",
+                        zIndex: 1
                     }}>Emergency 119</h1>
-                <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-                    <button 
+
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 1 }}>
+                    <button
                         onClick={navigateToLogin}
                         style={{
-                            background: "rgba(255, 255, 255, 0.2)",
-                            border: "1px solid rgba(255, 255, 255, 0.3)",
-                            borderRadius: "4px",
+                            background: "rgba(255, 255, 255, 0.15)",
+                            border: "1.5px solid rgba(255, 255, 255, 0.4)",
+                            borderRadius: "8px",
                             color: "white",
-                            padding: "6px 16px",
+                            padding: "10px 22px",
                             fontSize: "14px",
-                            fontWeight: "500",
-                            cursor: "pointer"
+                            fontWeight: "600",
+                            cursor: "pointer",
+                            backdropFilter: "blur(10px)",
+                            transition: "all 0.3s ease",
+                            transform: "translateY(0)"
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.background = "rgba(255, 255, 255, 0.25)";
+                            e.target.style.transform = "translateY(-2px)";
+                            e.target.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.background = "rgba(255, 255, 255, 0.15)";
+                            e.target.style.transform = "translateY(0)";
+                            e.target.style.boxShadow = "none";
                         }}
                     >
                         로그인
                     </button>
-                    <button 
+                    <button
                         onClick={navigateToSignup}
                         style={{
-                            background: "rgba(255, 255, 255, 0.2)",
-                            border: "1px solid rgba(255, 255, 255, 0.3)",
-                            borderRadius: "4px",
-                            color: "white",
-                            padding: "6px 16px",
+                            background: "white",
+                            border: "none",
+                            borderRadius: "8px",
+                            color: "#d32f2f",
+                            padding: "10px 22px",
                             fontSize: "14px",
-                            fontWeight: "500",
-                            cursor: "pointer"
+                            fontWeight: "600",
+                            cursor: "pointer",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                            transition: "all 0.3s ease",
+                            transform: "translateY(0)"
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.transform = "translateY(-2px)";
+                            e.target.style.boxShadow = "0 4px 12px rgba(0,0,0,0.25)";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.transform = "translateY(0)";
+                            e.target.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
                         }}
                     >
                         회원가입

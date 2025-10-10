@@ -66,6 +66,26 @@ const Login = () => {
           return;
         }
 
+        // 회원탈퇴한 계정인지 확인
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('is_active')
+          .eq('id', data.user.id)
+          .single();
+
+        if (userError) {
+          console.error('사용자 정보 조회 오류:', userError);
+          alert('사용자 정보를 확인할 수 없습니다.');
+          await supabase.auth.signOut();
+          return;
+        }
+
+        if (!userData.is_active) {
+          alert('탈퇴한 계정입니다. 로그인할 수 없습니다.');
+          await supabase.auth.signOut();
+          return;
+        }
+
         // 사용자의 아이디를 가져오기 위해 추가 정보 조회
         const userId = data.user.user_metadata?.user_id || formData.email.split('@')[0];
 

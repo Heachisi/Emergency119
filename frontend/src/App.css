@@ -577,7 +577,6 @@ body {
 button:focus,
 input:focus,
 select:focus {
-  outline: 2px solid #00ff88;
   outline-offset: 2px;
 }
 
