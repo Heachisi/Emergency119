@@ -88,13 +88,16 @@ const SmokeDetect = () => {
         const prob_fire = calculateFireProbability(d);
         const pred = prob_fire >= threshold ? 1 : 0;
 
+        // UTC 시간 그대로 표시
+        const date = new Date(d.created_at);
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const hour = String(date.getUTCHours()).padStart(2, '0');
+        const minute = String(date.getUTCMinutes()).padStart(2, '0');
+        const timeStr = `${month}-${day} ${hour}:${minute}`;
+
         return {
-          t: new Date(d.created_at).toLocaleString('ko-KR', {
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-          }),
+          t: timeStr,
           prob_fire: Number(prob_fire.toFixed(3)),
           pred: Number(pred),
           fire_alarm: d.fire_alarm ? 1 : 0,

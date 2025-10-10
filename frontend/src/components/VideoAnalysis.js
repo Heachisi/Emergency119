@@ -347,9 +347,9 @@ function VideoAnalysis() {
                     <button onClick={handleReanalyze} className="reanalyze-button" disabled={isProcessing}>
                       🔄 재분석
                     </button>
-                    <button onClick={handleReset} className="reset-button-simple">
+                    {/* <button onClick={handleReset} className="reset-button-simple">
                       📂 다른 비디오 선택
-                    </button>
+                    </button> */}
                   </div>
                 )}
               </div>
