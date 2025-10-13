@@ -292,24 +292,24 @@ const SmokeDetect = () => {
             marginBottom:'20px'
           }}>
           {rows.length > 0 && (
-            <div style={{ display: 'flex', gap: '30px' }}>
+            <div style={{ display: 'flex', gap: '30px', fontWeight:'bold' }}>
               <StatCard 
                 icon="📈" 
                 label="실시간 화재 위험도" 
                 value={`${(rows.reduce((sum, r) => sum + r.prob_fire, 0) / rows.length * 100).toFixed(1)}%`}
-                gradient="linear-gradient(135deg, #66c963ff 0%, #d0ebcfff 100%)"
+                gradient="linear-gradient(135deg, #ca2200ff 0%, #ffb92eff 100%)"
               />
               <StatCard 
                 icon="🔥" 
                 label="예측된 화재" 
                 value={rows.filter(r => r.pred === 1).length}
-                gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+                gradient="linear-gradient(135deg, #34c424ff 0%, #cdebcbff 100%)"
               />
               <StatCard 
                 icon="🚨" 
                 label="실제 경보 발생" 
                 value={rows.filter(r => r.fire_alarm === 1).length}
-                gradient="linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
+                gradient="linear-gradient(135deg, #1d69ebff 0%, #9adbfbff 100%)"
               />
               <StatCard 
                 icon="📋" 
@@ -497,173 +497,173 @@ const RealTimeStatusPanel = ({ rows, threshold, currentTime }) => {
 
   const status = getStatus();
 
-  return (
-    <>
-      <style>
-        {`
-          @keyframes blink {
-            0%, 50%, 100% { opacity: 1; }
-            25%, 75% { opacity: 0.4; }
-          }
-        `}
-      </style>
-      <div style={{
-        marginTop: '24px',
-        background: 'rgba(26, 26, 46, 0.6)',
-        backdropFilter: 'blur(10px)',
-        border: `2px solid ${status.borderColor}`,
-        borderRadius: '16px',
-        padding: '24px',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
-      }}>
-        <h4 style={{ margin: '0 0 20px 0', color: '#8ab4f8', fontSize: '18px' }}>
-          📡 실시간 화재 위험 모니터링
-        </h4>
+  // return (
+  //   <>
+  //     <style>
+  //       {`
+  //         @keyframes blink {
+  //           0%, 50%, 100% { opacity: 1; }
+  //           25%, 75% { opacity: 0.4; }
+  //         }
+  //       `}
+  //     </style>
+  //     <div style={{
+  //       marginTop: '24px',
+  //       background: 'rgba(26, 26, 46, 0.6)',
+  //       backdropFilter: 'blur(10px)',
+  //       border: `2px solid ${status.borderColor}`,
+  //       borderRadius: '16px',
+  //       padding: '24px',
+  //       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+  //     }}>
+  //       <h4 style={{ margin: '0 0 20px 0', color: '#8ab4f8', fontSize: '18px' }}>
+  //         📡 실시간 화재 위험 모니터링
+  //       </h4>
 
-        {/* 메인 상태 표시 */}
-        <div style={{
-          background: status.bgColor,
-          border: `2px solid ${status.borderColor}`,
-          borderRadius: '12px',
-          padding: '20px',
-          textAlign: 'center',
-          marginBottom: '20px',
-          animation: status.animation
-        }}>
-          <div style={{ fontSize: '48px', marginBottom: '8px' }}>{status.icon}</div>
-          <div style={{
-            fontSize: '32px',
-            fontWeight: 'bold',
-            color: status.color,
-            marginBottom: '8px'
-          }}>
-            {status.text}
-          </div>
-          <div style={{
-            fontSize: '24px',
-            color: status.color,
-            fontWeight: '600'
-          }}>
-            위험도: {(currentRisk * 100).toFixed(1)}%
-          </div>
-        </div>
+  //       {/* 메인 상태 표시 */}
+  //       <div style={{
+  //         background: status.bgColor,
+  //         border: `2px solid ${status.borderColor}`,
+  //         borderRadius: '12px',
+  //         padding: '20px',
+  //         textAlign: 'center',
+  //         marginBottom: '20px',
+  //         animation: status.animation
+  //       }}>
+  //         <div style={{ fontSize: '48px', marginBottom: '8px' }}>{status.icon}</div>
+  //         <div style={{
+  //           fontSize: '32px',
+  //           fontWeight: 'bold',
+  //           color: status.color,
+  //           marginBottom: '8px'
+  //         }}>
+  //           {status.text}
+  //         </div>
+  //         <div style={{
+  //           fontSize: '24px',
+  //           color: status.color,
+  //           fontWeight: '600'
+  //         }}>
+  //           위험도: {(currentRisk * 100).toFixed(1)}%
+  //         </div>
+  //       </div>
 
-        {/* 상세 정보 */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '16px',
-          marginBottom: '16px'
-        }}>
-          {/* 업데이트 시간 */}
-          <div style={{
-            background: 'rgba(139, 180, 248, 0.1)',
-            border: '1px solid rgba(139, 180, 248, 0.2)',
-            borderRadius: '8px',
-            padding: '12px'
-          }}>
-            <div style={{ fontSize: '12px', color: '#8ab4f8', marginBottom: '4px' }}>
-              🕐 업데이트 시간
-            </div>
-            <div style={{ fontSize: '16px', color: '#fff', fontWeight: '600' }}>
-              {currentTime.toLocaleTimeString('ko-KR')}
-            </div>
-          </div>
+  //       {/* 상세 정보 */}
+  //       <div style={{
+  //         display: 'grid',
+  //         gridTemplateColumns: 'repeat(2, 1fr)',
+  //         gap: '16px',
+  //         marginBottom: '16px'
+  //       }}>
+  //         {/* 업데이트 시간 */}
+  //         <div style={{
+  //           background: 'rgba(139, 180, 248, 0.1)',
+  //           border: '1px solid rgba(139, 180, 248, 0.2)',
+  //           borderRadius: '8px',
+  //           padding: '12px'
+  //         }}>
+  //           <div style={{ fontSize: '12px', color: '#8ab4f8', marginBottom: '4px' }}>
+  //             🕐 업데이트 시간
+  //           </div>
+  //           <div style={{ fontSize: '16px', color: '#fff', fontWeight: '600' }}>
+  //             {currentTime.toLocaleTimeString('ko-KR')}
+  //           </div>
+  //         </div>
 
-          {/* 위치 정보 */}
-          <div style={{
-            background: 'rgba(139, 180, 248, 0.1)',
-            border: '1px solid rgba(139, 180, 248, 0.2)',
-            borderRadius: '8px',
-            padding: '12px'
-          }}>
-            <div style={{ fontSize: '12px', color: '#8ab4f8', marginBottom: '4px' }}>
-              📍 모니터링 위치
-            </div>
-            <div style={{ fontSize: '16px', color: '#fff', fontWeight: '600' }}>
-              센서 위치 A동 3층
-            </div>
-          </div>
-        </div>
+  //         {/* 위치 정보 */}
+  //         <div style={{
+  //           background: 'rgba(139, 180, 248, 0.1)',
+  //           border: '1px solid rgba(139, 180, 248, 0.2)',
+  //           borderRadius: '8px',
+  //           padding: '12px'
+  //         }}>
+  //           <div style={{ fontSize: '12px', color: '#8ab4f8', marginBottom: '4px' }}>
+  //             📍 모니터링 위치
+  //           </div>
+  //           <div style={{ fontSize: '16px', color: '#fff', fontWeight: '600' }}>
+  //             센서 위치 A동 3층
+  //           </div>
+  //         </div>
+  //       </div>
 
-        {/* 센서 상세 데이터 */}
-        {latestData && (
-          <div style={{
-            background: 'rgba(0, 0, 0, 0.2)',
-            borderRadius: '8px',
-            padding: '16px'
-          }}>
-            <div style={{ fontSize: '14px', color: '#8ab4f8', marginBottom: '12px', fontWeight: '600' }}>
-              📊 센서 데이터
-            </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '12px',
-              fontSize: '13px',
-              color: '#aaa'
-            }}>
-              <div>
-                <span style={{ color: '#8ab4f8' }}>🌡️ 온도:</span>
-                <br />
-                <span style={{ color: '#fff', fontSize: '16px' }}>
-                  {latestData.temperature?.toFixed(1)}°C
-                </span>
-              </div>
-              <div>
-                <span style={{ color: '#8ab4f8' }}>💧 습도:</span>
-                <br />
-                <span style={{ color: '#fff', fontSize: '16px' }}>
-                  {latestData.humidity?.toFixed(1)}%
-                </span>
-              </div>
-              <div>
-                <span style={{ color: '#8ab4f8' }}>💨 TVOC:</span>
-                <br />
-                <span style={{ color: '#fff', fontSize: '16px' }}>
-                  {latestData.tvoc?.toFixed(0)} ppb
-                </span>
-              </div>
-              <div>
-                <span style={{ color: '#8ab4f8' }}>🫁 eCO2:</span>
-                <br />
-                <span style={{ color: '#fff', fontSize: '16px' }}>
-                  {latestData.eco2?.toFixed(0)} ppm
-                </span>
-              </div>
-              <div>
-                <span style={{ color: '#8ab4f8' }}>🌫️ PM2.5:</span>
-                <br />
-                <span style={{ color: '#fff', fontSize: '16px' }}>
-                  {latestData.pm25?.toFixed(1)} μg/m³
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+  //       {/* 센서 상세 데이터 */}
+  //       {latestData && (
+  //         <div style={{
+  //           background: 'rgba(0, 0, 0, 0.2)',
+  //           borderRadius: '8px',
+  //           padding: '16px'
+  //         }}>
+  //           <div style={{ fontSize: '14px', color: '#8ab4f8', marginBottom: '12px', fontWeight: '600' }}>
+  //             📊 센서 데이터
+  //           </div>
+  //           <div style={{
+  //             display: 'grid',
+  //             gridTemplateColumns: 'repeat(3, 1fr)',
+  //             gap: '12px',
+  //             fontSize: '13px',
+  //             color: '#aaa'
+  //           }}>
+  //             <div>
+  //               <span style={{ color: '#8ab4f8' }}>🌡️ 온도:</span>
+  //               <br />
+  //               <span style={{ color: '#fff', fontSize: '16px' }}>
+  //                 {latestData.temperature?.toFixed(1)}°C
+  //               </span>
+  //             </div>
+  //             <div>
+  //               <span style={{ color: '#8ab4f8' }}>💧 습도:</span>
+  //               <br />
+  //               <span style={{ color: '#fff', fontSize: '16px' }}>
+  //                 {latestData.humidity?.toFixed(1)}%
+  //               </span>
+  //             </div>
+  //             <div>
+  //               <span style={{ color: '#8ab4f8' }}>💨 TVOC:</span>
+  //               <br />
+  //               <span style={{ color: '#fff', fontSize: '16px' }}>
+  //                 {latestData.tvoc?.toFixed(0)} ppb
+  //               </span>
+  //             </div>
+  //             <div>
+  //               <span style={{ color: '#8ab4f8' }}>🫁 eCO2:</span>
+  //               <br />
+  //               <span style={{ color: '#fff', fontSize: '16px' }}>
+  //                 {latestData.eco2?.toFixed(0)} ppm
+  //               </span>
+  //             </div>
+  //             <div>
+  //               <span style={{ color: '#8ab4f8' }}>🌫️ PM2.5:</span>
+  //               <br />
+  //               <span style={{ color: '#fff', fontSize: '16px' }}>
+  //                 {latestData.pm25?.toFixed(1)} μg/m³
+  //               </span>
+  //             </div>
+  //           </div>
+  //         </div>
+  //       )}
 
-        {/* 상태 설명 */}
-        <div style={{
-          marginTop: '16px',
-          padding: '12px',
-          background: 'rgba(139, 180, 248, 0.05)',
-          borderRadius: '8px',
-          fontSize: '12px',
-          color: '#aaa',
-          textAlign: 'center'
-        }}>
-          <div style={{ marginBottom: '8px', fontWeight: '600', color: '#8ab4f8' }}>
-            상태 기준
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-            <span style={{ color: '#4ade80' }}>✅ 안전: {(threshold * 0.5 * 100).toFixed(0)}% 미만</span>
-            <span style={{ color: '#fb923c' }}>⚠️ 주의: {(threshold * 0.5 * 100).toFixed(0)}% ~ {(threshold * 100).toFixed(0)}%</span>
-            <span style={{ color: '#ef4444' }}>🚨 위험: {(threshold * 100).toFixed(0)}% 이상</span>
-          </div>
-        </div>
-      </div>
-    </>
-  );
+  //       {/* 상태 설명 */}
+  //       <div style={{
+  //         marginTop: '16px',
+  //         padding: '12px',
+  //         background: 'rgba(139, 180, 248, 0.05)',
+  //         borderRadius: '8px',
+  //         fontSize: '12px',
+  //         color: '#aaa',
+  //         textAlign: 'center'
+  //       }}>
+  //         <div style={{ marginBottom: '8px', fontWeight: '600', color: '#8ab4f8' }}>
+  //           상태 기준
+  //         </div>
+  //         <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+  //           <span style={{ color: '#4ade80' }}>✅ 안전: {(threshold * 0.5 * 100).toFixed(0)}% 미만</span>
+  //           <span style={{ color: '#fb923c' }}>⚠️ 주의: {(threshold * 0.5 * 100).toFixed(0)}% ~ {(threshold * 100).toFixed(0)}%</span>
+  //           <span style={{ color: '#ef4444' }}>🚨 위험: {(threshold * 100).toFixed(0)}% 이상</span>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   </>
+  // );
 };
 
 export default SmokeDetect;
