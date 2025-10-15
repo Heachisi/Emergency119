@@ -206,7 +206,8 @@ const Resetpw = () => {
                                         display: "block",
                                         marginBottom: "5px",
                                         fontSize: "13px",
-                                        fontWeight: "500"
+                                        fontWeight: "500",
+                                        color:"black"
                                     }}>새 비밀번호 <span style={{ color: "red" }}>*</span></label>
                                     <input
                                         type="password"
@@ -233,7 +234,8 @@ const Resetpw = () => {
                                         display: "block",
                                         marginBottom: "5px",
                                         fontSize: "13px",
-                                        fontWeight: "500"
+                                        fontWeight: "500",
+                                        color:"black"
                                     }}>비밀번호 확인 <span style={{ color: "red" }}>*</span></label>
                                     <input
                                         type="password"

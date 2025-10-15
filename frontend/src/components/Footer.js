@@ -122,7 +122,7 @@ const Footer = () => {
                   background: 'transparent',
                   border: 'none',
                   color: '#999',
-                  fontSize: '12px',
+                  fontSize: '15px',
                   cursor: 'pointer',
                   textDecoration: 'underline',
                   padding: '5px 10px'

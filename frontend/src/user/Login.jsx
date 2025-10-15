@@ -109,7 +109,7 @@ const Login = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user && user.email_confirmed_at) {
             // 이미 인증완료된 사용자면 메인페이지로
-            navigate('/');
+            navigate('/analysis');
         }
     };
     checkUser();

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../user/Header';
 import { supabase } from '../supabase.js';
+import Footer from '../components/Footer';
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, ReferenceLine, Legend } from 'recharts';
 
 const SmokeDetect = () => {
@@ -431,6 +432,7 @@ const SmokeDetect = () => {
         </div>
       </div>
     </div>
+    <Footer />
     </>
   );
 };
